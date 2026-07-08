@@ -88,3 +88,6 @@ This public repository intentionally does not include:
 Maintainer: HC Wang  
 Email: [hcwang@hdu.edu.cn](mailto:hcwang@hdu.edu.cn)
 
+## License
+
+This project is released under the [MIT License](LICENSE).

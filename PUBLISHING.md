@@ -6,16 +6,10 @@ This repository is prepared for GitHub under:
 hcwang001/afe-analog-design-flow
 ```
 
-## Before Publishing
+## License
 
-Choose a license. If no `LICENSE` file is added, the repository is visible on
-GitHub but is not explicitly open-source licensed.
-
-Recommended options:
-
-- `MIT`: permissive, simple, widely used.
-- `Apache-2.0`: permissive with explicit patent language.
-- No license yet: safest if you want to review before granting reuse rights.
+This repository uses the MIT License. Keep the `LICENSE` file in the repository
+root when publishing or mirroring the project.
 
 ## Publish With GitHub CLI
 
@@ -59,4 +53,3 @@ After GitHub renders the repo:
 
 Maintainer: HC Wang  
 Email: [hcwang@hdu.edu.cn](mailto:hcwang@hdu.edu.cn)
-
