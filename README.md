@@ -1,5 +1,6 @@
 # Neural AFE AI Design Skill
 
+Tapeout-Oriented AI Design Automation for Neural Recording Analog Front-End ICs
 A Codex skill for running neural-recording analog front-end design as a
 phase-gated, evidence-driven engineering workflow.
 
