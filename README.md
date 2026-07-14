@@ -1,4 +1,5 @@
 # Neural AFE AI Design Skill
+# 面向实际流片的神经信号采集 AFE 芯片 AI 自动化设计 Skill
 
 Tapeout-Oriented AI Design Automation for Neural Recording Analog Front-End ICs
 A Codex skill for running neural-recording analog front-end design as a
