@@ -1,4 +1,4 @@
-# Neural Recording AFE Design Flow
+# Neural AFE AI Design Skill
 
 A Codex skill for running neural-recording analog front-end design as a
 phase-gated, evidence-driven engineering workflow.
