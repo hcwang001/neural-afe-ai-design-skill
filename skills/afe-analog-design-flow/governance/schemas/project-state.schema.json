@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/project-state.schema.json",
+  "title": "AFE Project Governance State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "state_revision",
+    "template_only",
+    "current_baseline",
+    "policies",
+    "requirements_traceability",
+    "risk_register",
+    "trusted_signers",
+    "decision_records",
+    "change_records",
+    "gates"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "state_revision": {"type": "integer", "minimum": 0},
+    "template_only": {"type": "boolean"},
+    "current_baseline": {"$ref": "#/$defs/baseline"},
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate_policy", "evidence_policy", "authorization_policy"],
+      "properties": {
+        "gate_policy": {"type": "string", "minLength": 1},
+        "evidence_policy": {"type": "string", "minLength": 1},
+        "authorization_policy": {"type": "string", "minLength": 1}
+      }
+    },
+    "requirements_traceability": {"type": "string", "minLength": 1},
+    "risk_register": {"type": "string", "minLength": 1},
+    "trusted_signers": {"type": "string", "minLength": 1},
+    "decision_records": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "change_records": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "gates": {
+      "type": "object",
+      "minProperties": 1,
+      "patternProperties": {
+        "^G(?:[0-9]|10)$": {"$ref": "#/$defs/gate_state"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id", "updated_at"],
+      "properties": {
+        "actor_type": {
+          "enum": ["human", "codex", "agent", "automation", "system", "migration"]
+        },
+        "actor_id": {"type": "string", "minLength": 1},
+        "updated_at": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "pdk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "release", "model_hash", "model_sections"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "release": {"type": "string", "minLength": 1},
+        "model_hash": {"$ref": "#/$defs/hash"},
+        "model_sections": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "simulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "executable_hash"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "executable_hash": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_commit",
+        "spec_hash",
+        "netlist_hash",
+        "testbench_hash",
+        "command_profile_hash",
+        "metric_extractor_hash",
+        "policy_hash",
+        "pdk",
+        "simulator"
+      ],
+      "properties": {
+        "source_commit": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "spec_hash": {"$ref": "#/$defs/hash"},
+        "netlist_hash": {"$ref": "#/$defs/hash"},
+        "testbench_hash": {"$ref": "#/$defs/hash"},
+        "command_profile_hash": {"$ref": "#/$defs/hash"},
+        "metric_extractor_hash": {"$ref": "#/$defs/hash"},
+        "policy_hash": {"$ref": "#/$defs/hash"},
+        "layout_hash": {"$ref": "#/$defs/hash"},
+        "pex_hash": {"$ref": "#/$defs/hash"},
+        "extraction_deck_hash": {"$ref": "#/$defs/hash"},
+        "pdk": {"$ref": "#/$defs/pdk"},
+        "simulator": {"$ref": "#/$defs/simulator"}
+      }
+    },
+    "gate_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "status_actor",
+        "candidate_id",
+        "evidence_manifests",
+        "waiver_records",
+        "review_record",
+        "approval_record"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_started",
+            "in_progress",
+            "review_ready",
+            "human_approval_required",
+            "changes_required",
+            "blocked",
+            "stale",
+            "approved"
+          ]
+        },
+        "status_actor": {"$ref": "#/$defs/actor"},
+        "candidate_id": {"type": ["string", "null"]},
+        "candidate_authors": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true,
+          "default": []
+        },
+        "evidence_manifests": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "waiver_records": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "review_record": {"type": ["string", "null"]},
+        "approval_record": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status_actor": {
+                "properties": {
+                  "actor_type": {"enum": ["codex", "agent", "automation"]}
+                },
+                "required": ["actor_type"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "in_progress",
+                  "review_ready",
+                  "human_approval_required",
+                  "changes_required",
+                  "blocked",
+                  "stale"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "approved"}}},
+          "then": {
+            "properties": {
+              "status_actor": {
+                "properties": {"actor_type": {"const": "human"}}
+              },
+              "approval_record": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

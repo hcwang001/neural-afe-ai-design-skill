@@ -1,8 +1,14 @@
 # Netlist Patterns
 
+Netlists used as promotion evidence must be content-addressed and bound through
+an evidence manifest to the candidate ID, source/evidence commits, complete
+include digest, testbench, PDK/model, and policy baseline. A sanitized/public
+netlist is not automatically identical to the internally simulated netlist.
+
 ## Clean Netlists
 
-- Generate a public candidate netlist for each promoted run.
+- Generate a sanitized public candidate netlist for each nominated run when
+  disclosure is allowed, while retaining the internal content digest.
 - Keep generated wrappers next to the run report.
 - Avoid long include chains when a clean inline wrapper is safer.
 - Name variants with stable run IDs such as `INT090`, `MFG066`, or `WBDRV001`.

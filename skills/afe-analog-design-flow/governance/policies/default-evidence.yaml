@@ -1,0 +1,194 @@
+schema_version: "1.0.0"
+policy_id: afe-governance-evidence-v1
+description: >-
+  Evidence identity, promotion eligibility, provenance, metric, and freshness
+  requirements for the default AFE lifecycle.
+
+evidence_levels:
+  - literature
+  - analysis
+  - behavioral
+  - primitive
+  - transistor_schematic
+  - monte_carlo
+  - layout_planning
+  - pex
+  - post_layout
+  - post_layout_monte_carlo
+  - release
+
+promotion_level_by_gate:
+  G0: [analysis]
+  G1: [analysis]
+  G2: [analysis]
+  G3: [primitive]
+  G4: [behavioral, transistor_schematic]
+  G5: [transistor_schematic]
+  G6: [transistor_schematic, monte_carlo]
+  G7: [layout_planning, transistor_schematic, monte_carlo]
+  G8: [pex]
+  G9: [post_layout, post_layout_monte_carlo]
+  G10: [release, post_layout]
+
+functional_proxy_levels:
+  - literature
+  - analysis
+  - behavioral
+
+proxy_policy:
+  disallow_for_transistor_promotion_from_gate: G5
+  disallowed_proxy_kinds:
+    - functional_ideal_resistor
+    - functional_ideal_leak
+    - behavioral_source
+    - behavioral_cmfb
+    - ideal_bias_reference
+    - functional_zero_volt_tie
+
+required_provenance:
+  all:
+    - source_commit
+    - evidence_commit
+    - spec_hash
+    - timestamp_utc
+    - policy_hash
+  primitive:
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+  behavioral:
+    - metric_extractor_hash
+  layout_planning:
+    - netlist_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+  release:
+    - netlist_hash
+    - layout_hash
+    - pex_hash
+    - extraction_deck_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+  transistor_schematic:
+    - netlist_hash
+    - testbench_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+  monte_carlo:
+    - netlist_hash
+    - testbench_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+    - monte_carlo.seed
+    - monte_carlo.sample_count
+    - monte_carlo.statistical_section
+  pex:
+    - netlist_hash
+    - testbench_hash
+    - layout_hash
+    - pex_hash
+    - extraction_deck_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+  post_layout:
+    - netlist_hash
+    - testbench_hash
+    - layout_hash
+    - pex_hash
+    - extraction_deck_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+  post_layout_monte_carlo:
+    - netlist_hash
+    - testbench_hash
+    - layout_hash
+    - pex_hash
+    - extraction_deck_hash
+    - pdk.id
+    - pdk.release
+    - pdk.model_hash
+    - pdk.model_sections
+    - simulator.name
+    - simulator.version
+    - simulator.executable_hash
+    - command
+    - command_profile_hash
+    - metric_extractor_hash
+    - monte_carlo.seed
+    - monte_carlo.sample_count
+    - monte_carlo.statistical_section
+
+freshness_dependencies:
+  source_commit: source_commit
+  spec_hash: spec_hash
+  netlist_hash: netlist_hash
+  testbench_hash: testbench_hash
+  metric_extractor_hash: metric_extractor_hash
+  command_profile_hash: command_profile_hash
+  policy_hash: policy_hash
+  layout_hash: layout_hash
+  pex_hash: pex_hash
+  extraction_deck_hash: extraction_deck_hash
+  pdk.id: pdk.id
+  pdk.release: pdk.release
+  pdk.model_hash: pdk.model_hash
+  pdk.model_sections: pdk.model_sections
+  simulator.name: simulator.name
+  simulator.version: simulator.version
+  simulator.executable_hash: simulator.executable_hash
+
+metric_policy:
+  controlling_classification: controlling
+  allowed_operators: [">=", ">", "<=", "<", "==", between]
+  require_exact_unit_match: true
+  default_aggregation: all
+  fail_on_parse_error: true
+  fail_on_missing_result: true
+
+artifact_integrity:
+  hash_algorithm: sha256
+  require_existing_file: true
+  require_digest_match: true
+  old_project_data_is_promotion_evidence: false
+  old_candidate_data_is_promotion_evidence: false

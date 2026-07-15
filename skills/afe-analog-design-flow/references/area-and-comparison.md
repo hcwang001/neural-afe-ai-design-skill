@@ -1,5 +1,9 @@
 # Area And Literature Comparison
 
+Area tables are evidence only when bound to the current candidate, topology,
+area-basis manifest, and scope digest. The INT090 section is
+`INFORMATIVE_ONLY`; it must never be used as current project validation data.
+
 ## Area Basis
 
 Always state the area basis:

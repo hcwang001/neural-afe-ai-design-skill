@@ -10,36 +10,35 @@ TEXT_SUFFIXES = {".csv", ".md", ".txt", ".log", ".yaml", ".yml"}
 
 
 @dataclass(frozen=True)
-class Check:
+class InventoryRule:
     name: str
-    required: bool
     filename_terms: tuple[str, ...]
     content_terms: tuple[str, ...] = ()
     note: str = ""
 
 
-CHECKS = [
-    Check("handoff", True, ("handoff",), ("current phase", "next step")),
-    Check("candidate report", True, ("report", "summary"), ("key metrics", "topology")),
-    Check("source netlist/wrapper", True, ("netlist", "wrapper", ".scs", ".sp", ".cir", ".net")),
-    Check("module-level reports", True, ("module_report", "stage1_report", "stage2_report", "cmfb_report", "wellbias_report"), ("module report",)),
-    Check("module-level result images", True, ("module_result", "module_plot", "stage1", "stage2", "cmfb", "wellbias", "pseudor", ".png", ".svg")),
-    Check("dc/pvt evidence", True, ("dc", "pvt", "det_dc_rows"), ("operating", "corner")),
-    Check("gain/bandwidth evidence", True, ("gain", "bandwidth", "gbw", "ac")),
-    Check("noise evidence", True, ("noise",)),
-    Check("cmrr evidence", True, ("cmrr",)),
-    Check("psrr evidence", True, ("psrr",)),
-    Check("mismatch evidence", True, ("mismatch", "cinp", "deterministic"), ("mismatch",)),
-    Check("startup/recovery evidence", True, ("startup", "recovery", "transient"), ("startup", "recovery")),
-    Check("stability evidence", True, ("stb", "diffstb", "stability"), ("diffstbprobe", "phase margin")),
-    Check("area/comparison", True, ("area", "comparison"), ("area basis",)),
-    Check("floorplan/layout suggestion", True, ("floorplan", "layout"), ("floorplan", "layout")),
-    Check("tapeout readiness", True, ("tapeout", "readiness"), ("tapeout readiness", "reliability")),
-    Check("functional ideal audit", True, ("ideal", "audit"), ("functional ideal", "behavioral source")),
-    Check("monte carlo", False, ("mc", "monte", "monte-carlo"), ("monte", "sample count")),
-    Check("pex/post-layout plan", False, ("pex", "post-layout", "postlayout"), ("pex", "extraction")),
-    Check("test/trim/calibration plan", False, ("trim", "calibration", "test"), ("trim", "calibration")),
-    Check("esd/top-level plan", False, ("esd", "pad", "top-level"), ("esd", "pad")),
+INVENTORY_RULES = [
+    InventoryRule("handoff-like files", ("handoff",), ("current phase", "next step")),
+    InventoryRule("report-like files", ("report", "summary"), ("key metrics", "topology")),
+    InventoryRule("netlist/wrapper-like files", ("netlist", "wrapper", ".scs", ".sp", ".cir", ".net")),
+    InventoryRule("module-report-like files", ("module_report", "stage1_report", "stage2_report", "cmfb_report", "wellbias_report"), ("module report",)),
+    InventoryRule("result-image-like files", ("module_result", "module_plot", "stage1", "stage2", "cmfb", "wellbias", "pseudor", ".png", ".svg")),
+    InventoryRule("dc/pvt-like files", ("dc", "pvt", "det_dc_rows"), ("operating", "corner")),
+    InventoryRule("gain/bandwidth-like files", ("gain", "bandwidth", "gbw", "ac")),
+    InventoryRule("noise-like files", ("noise",)),
+    InventoryRule("cmrr-like files", ("cmrr",)),
+    InventoryRule("psrr-like files", ("psrr",)),
+    InventoryRule("mismatch-like files", ("mismatch", "cinp", "deterministic"), ("mismatch",)),
+    InventoryRule("startup/recovery-like files", ("startup", "recovery", "transient"), ("startup", "recovery")),
+    InventoryRule("stability-like files", ("stb", "diffstb", "stability"), ("diffstbprobe", "phase margin")),
+    InventoryRule("area/comparison-like files", ("area", "comparison"), ("area basis",)),
+    InventoryRule("floorplan/layout-like files", ("floorplan", "layout"), ("floorplan", "layout")),
+    InventoryRule("tapeout-readiness-like files", ("tapeout", "readiness"), ("tapeout readiness", "reliability")),
+    InventoryRule("functional-ideal-audit-like files", ("ideal", "audit"), ("functional ideal", "behavioral source")),
+    InventoryRule("monte-carlo-like files", ("mc", "monte", "monte-carlo"), ("monte", "sample count")),
+    InventoryRule("pex/post-layout-like files", ("pex", "post-layout", "postlayout"), ("pex", "extraction")),
+    InventoryRule("test/trim/calibration-like files", ("trim", "calibration", "test"), ("trim", "calibration")),
+    InventoryRule("esd/top-level-like files", ("esd", "pad", "top-level"), ("esd", "pad")),
 ]
 
 
@@ -63,7 +62,7 @@ def read_text(path: Path) -> str:
         return ""
 
 
-def matches(check: Check, files: list[Path], texts: dict[Path, str]) -> list[Path]:
+def matches(check: InventoryRule, files: list[Path], texts: dict[Path, str]) -> list[Path]:
     hits: list[Path] = []
     for path in files:
         name = path.name.lower()
@@ -87,10 +86,17 @@ def rel(path: Path, root: Path) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Check whether an AFE candidate report directory has expected evidence artifacts."
+        description=(
+            "Non-authoritative file inventory for an AFE run directory. This tool "
+            "does not validate metrics, provenance, freshness, review, or gate state."
+        )
     )
     parser.add_argument("run_dir", nargs="?", default=".", help="Candidate report/run directory.")
-    parser.add_argument("--strict", action="store_true", help="Return non-zero when required checks are missing.")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Deprecated compatibility flag. Inventory output never establishes gate readiness.",
+    )
     parser.add_argument("--max-hits", type=int, default=4, help="Maximum paths shown per check.")
     args = parser.parse_args()
 
@@ -101,38 +107,32 @@ def main() -> int:
     files = iter_files(root)
     texts = {path: read_text(path) for path in files}
 
-    print(f"# Candidate Report Check: {root.name}")
+    print(f"# Non-Authoritative Evidence Inventory: {root.name}")
     print(f"- root: {root}")
     print(f"- files scanned: {len(files)}")
+    print("- authoritative: false")
+    print("- warning: filename/content hits are discovery hints, not evidence or gate status")
+    print("- gate evaluation: use scripts/gatekeeper.py with machine-readable manifests")
+    if args.strict:
+        print("- deprecated: --strict has no gate meaning and is ignored")
 
-    missing_required: list[str] = []
-    missing_optional: list[str] = []
-
-    for check in CHECKS:
+    observed = 0
+    for check in INVENTORY_RULES:
         hits = matches(check, files, texts)
-        status = "FOUND" if hits else ("MISSING" if check.required else "optional-missing")
-        marker = "[x]" if hits else ("[!]" if check.required else "[-]")
-        print(f"\n{marker} {check.name}: {status}")
+        status = "OBSERVED" if hits else "not-observed"
+        observed += bool(hits)
+        print(f"\n- {check.name}: {status}")
         if check.note:
             print(f"    note: {check.note}")
         for hit in hits[: args.max_hits]:
             print(f"    - {rel(hit, root)}")
         if len(hits) > args.max_hits:
             print(f"    - ... {len(hits) - args.max_hits} more")
-        if not hits and check.required:
-            missing_required.append(check.name)
-        elif not hits:
-            missing_optional.append(check.name)
-
     print("\n# Summary")
-    print(f"- missing required: {len(missing_required)}")
-    if missing_required:
-        print("  " + ", ".join(missing_required))
-    print(f"- missing optional: {len(missing_optional)}")
-    if missing_optional:
-        print("  " + ", ".join(missing_optional))
+    print(f"- categories observed: {observed}/{len(INVENTORY_RULES)}")
+    print("- readiness conclusion: none")
 
-    return 1 if args.strict and missing_required else 0
+    return 0
 
 
 if __name__ == "__main__":

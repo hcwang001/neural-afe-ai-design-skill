@@ -1,5 +1,10 @@
 # Layout Floorplan Suggestion
 
+A floorplan is a G7 planning artifact, not layout, PEX, post-layout signoff, or
+tapeout release. The INT090 pattern is `INFORMATIVE_ONLY` and cannot satisfy a
+new project's mandatory artifact without current-project reproduction and
+provenance.
+
 Use this reference near the end of a candidate design, after full-chain
 topology, block sizes, area basis, and major pass/fail metrics are known.
 

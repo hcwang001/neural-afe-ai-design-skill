@@ -1,0 +1,26 @@
+schema_version: "1.0.0"
+waiver_id: REPLACE_WITH_WAIVER_ID
+project_id: REPLACE_WITH_PROJECT_ID
+gate_id: REPLACE_WITH_GATE_ID
+severity: MAJOR
+status: proposed
+
+scope:
+  candidate_id: REPLACE_WITH_CANDIDATE_ID
+  criterion_ids: [REPLACE_WITH_CRITERION_ID]
+  evidence_ids: []
+
+baseline_digest: sha256:REPLACE_WITH_CURRENT_BASELINE_DIGEST
+
+owner:
+  actor_type: human
+  actor_id: REPLACE_WITH_WAIVER_OWNER
+
+rationale: REPLACE_WITH_RATIONALE
+compensating_controls: [REPLACE_WITH_COMPENSATING_CONTROL]
+expires_at: REPLACE_WITH_UTC_EXPIRY
+revalidation_triggers: [REPLACE_WITH_TRIGGER]
+
+# Codex must leave this empty. A waiver is unusable until real human approval
+# records with verified external signature references are present.
+approvals: []

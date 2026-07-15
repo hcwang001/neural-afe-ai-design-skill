@@ -1,0 +1,265 @@
+schema_version: "1.0.0"
+policy_id: afe-governance-gates-v1
+description: >-
+  Default company-style AFE lifecycle. Gate closure is a human authorization
+  action; automated tools may only report readiness.
+
+criteria_contract:
+  human_close_eligible_requires:
+    - mandatory_artifacts_valid
+    - controlling_requirements_satisfied
+    - no_open_blocker_or_major
+    - provenance_current
+    - evidence_not_stale
+    - predecessor_effectively_approved
+    - waivers_valid_and_unexpired
+    - independent_review_completed
+  effective_approved_requires:
+    - human_close_eligible
+    - verified_human_approval
+
+gate_order:
+  - G0
+  - G1
+  - G2
+  - G3
+  - G4
+  - G5
+  - G6
+  - G7
+  - G8
+  - G9
+  - G10
+
+gates:
+  G0:
+    name: Governance Baseline
+    predecessor: null
+    candidate_stage: governance_baseline
+    entry_criteria:
+      - project_state_instantiated
+    exit_criteria:
+      - human_close_eligible
+      - verified_human_approval
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - governance_baseline
+      - role_assignment
+      - policy_snapshot
+    requires_metric_evaluation: false
+  G1:
+    name: Requirements And Interface Baseline
+    predecessor: G0
+    candidate_stage: requirements_baseline
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - specification_baseline
+      - requirements_traceability
+      - verification_plan
+      - electrode_interface_contract
+      - adc_interface_contract
+      - pmu_interface_contract
+      - top_level_interface_contract
+    requires_metric_evaluation: false
+  G2:
+    name: Architecture Selection
+    predecessor: G1
+    candidate_stage: architecture_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - architecture_matrix
+      - architecture_decision_record
+      - risk_register
+      - block_allocation
+    requires_metric_evaluation: false
+  G3:
+    name: Primitive And Model Qualification
+    predecessor: G2
+    candidate_stage: primitive_baseline
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - pdk_manifest
+      - primitive_characterization
+      - passive_characterization
+      - model_applicability
+      - reliability_limits
+    requires_metric_evaluation: false
+  G4:
+    name: Behavioral Model And Verification Plan
+    predecessor: G3
+    candidate_stage: behavioral_baseline
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - chain_budget_model
+      - loop_plant_models
+      - model_assumption_register
+      - correlation_plan
+      - verification_plan
+    requires_metric_evaluation: true
+  G5:
+    name: Block Schematic Candidate
+    predecessor: G4
+    candidate_stage: block_schematic_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - block_candidate_manifest
+      - module_report
+      - dc_pvt_evidence
+      - operating_region_evidence
+      - stability_evidence
+      - noise_evidence
+      - startup_recovery_evidence
+      - functional_ideal_audit
+      - interface_evidence
+    requires_metric_evaluation: true
+  G6:
+    name: Integrated Schematic Candidate
+    predecessor: G5
+    candidate_stage: schematic_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - schematic_candidate_manifest
+      - full_chain_pvt_evidence
+      - metric_results
+      - deterministic_mismatch_evidence
+      - monte_carlo_evidence
+      - startup_recovery_evidence
+      - stability_evidence
+      - mismatch_aware_rejection_evidence
+      - reliability_audit
+      - high_z_node_audit
+      - functional_ideal_audit
+    requires_metric_evaluation: true
+  G7:
+    name: Layout Ready Candidate
+    predecessor: G6
+    candidate_stage: layout_ready_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - layout_ready_manifest
+      - floorplan
+      - layout_constraints
+      - area_report
+      - matching_symmetry_plan
+      - parasitic_stress_evidence
+      - high_z_node_audit
+      - test_trim_calibration_plan
+      - esd_pad_plan
+      - interface_closure
+      - pex_plan
+      - dfm_plan
+    requires_metric_evaluation: false
+  G8:
+    name: PEX Candidate
+    predecessor: G7
+    candidate_stage: pex_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [independent_reviewer, signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority]
+    mandatory_artifacts:
+      - pex_candidate_manifest
+      - drc_report
+      - lvs_report
+      - extraction_manifest
+      - pex_netlist
+      - post_layout_sanity_evidence
+    requires_metric_evaluation: false
+  G9:
+    name: Post Layout Signoff Candidate
+    predecessor: G8
+    candidate_stage: post_layout_signoff_candidate
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [signoff_reviewer]
+    required_approval_roles: [gate_approver, design_authority, release_authority]
+    mandatory_artifacts:
+      - post_layout_signoff_manifest
+      - post_layout_pvt_evidence
+      - post_layout_noise_evidence
+      - post_layout_stability_evidence
+      - post_layout_transient_evidence
+      - post_layout_rejection_evidence
+      - post_layout_monte_carlo_evidence
+      - reliability_audit
+      - dfm_report
+      - test_interface_verification
+      - esd_interface_verification
+      - post_fill_extraction_evidence
+    requires_metric_evaluation: true
+  G10:
+    name: Tapeout Release
+    predecessor: G9
+    candidate_stage: tapeout_release_package
+    entry_criteria: [predecessor_effectively_approved]
+    exit_criteria: [human_close_eligible, verified_human_approval]
+    required_review_roles: [signoff_reviewer]
+    required_approval_roles: [release_authority]
+    mandatory_artifacts:
+      - tapeout_release_manifest
+      - release_bom
+      - layout_release_digest
+      - signoff_summary
+      - waiver_summary
+      - interface_release
+      - foundry_deck_manifest
+      - data_integrity_report
+    requires_metric_evaluation: false
+
+finding_policy:
+  severities:
+    - BLOCKER
+    - MAJOR
+    - MINOR
+  blocking_open_severities:
+    - BLOCKER
+    - MAJOR
+  non_waivable_severities:
+    - BLOCKER
+  closable_finding_states:
+    - closed
+    - waived
+
+transition_policy:
+  require_predecessor_human_approval: true
+  future_gate_default_state: not_started
+  allow_parallel_exploration: true
+  parallel_artifact_flags:
+    exploratory_only: true
+    promotion_eligible: false
+  automated_close_allowed: false
+
+change_control:
+  record_field: change_records
+  blocking_statuses:
+    - proposed
+    - impact_assessed
+    - implemented
+    - revalidation_required
+    - verified
+  non_blocking_statuses:
+    - closed
+    - cancelled
+  bind_records_into_scope_digest: true

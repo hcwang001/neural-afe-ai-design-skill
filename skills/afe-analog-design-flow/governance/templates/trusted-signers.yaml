@@ -1,0 +1,7 @@
+schema_version: "1.0.0"
+project_id: REPLACE_WITH_PROJECT_ID
+
+# Public keys only. Private keys and signing actions remain under human control
+# outside Codex. Do not add a signer until the organization verifies identity,
+# role, key custody, and revocation handling.
+signers: {}

@@ -1,138 +1,252 @@
-# AFE Workflow
+# Governed AFE Development Workflow
 
-## Purpose
+## Purpose And Authority
 
-Use this reference for the high-level design loop. The workflow is optimized for
-future AFE projects, not for reproducing one historical conversation. It turns
-chat history into evidence, then runs a phase-gated design process.
+This reference explains the lifecycle implemented by
+`governance/policies/default-gates.yaml`. The machine-readable policy is
+controlling when prose and policy differ.
 
-## Phase 0: Context Ingestion
+Simulation completion is not gate closure. A gate closes only for the exact
+candidate revision and scope digest covered by a valid independent review and a
+verified human approval record. Codex and automation may report readiness but
+must not create that approval.
 
-1. Find the newest handoff and relevant older handoffs.
-2. Separate facts from decisions:
-   - Facts: measured reports, netlists, CSVs, plots, area tables.
-   - Decisions: active branch, rejected branches, fallback branches.
-   - Lessons: failure mechanisms, modeling blind spots, user constraints.
-3. Do not assume the latest branch is optimal. Re-enter the flow at the correct
-   phase.
+## Common Entry And Exit Rules
 
-## Phase 1: Specifications And Evidence Targets
+Every gate entry requires:
 
-Define the target table before any circuit changes:
+1. An instantiated, non-template project state.
+2. The predecessor gate in effective `approved` state, backed by a human
+   approval record whose scope digest still matches current evidence.
+3. Current policy, source, specification, requirements, PDK/model, and toolchain
+   baselines.
+4. No attempt to use other-project, other-candidate, stale, functional-proxy,
+   or `exploratory_only` material as promotion evidence.
 
-- Signal band and accepted passband.
-- Total gain and gain distribution.
-- Input-referred noise, preferred and acceptable.
-- Power/channel, preferred and acceptable.
-- Area/channel and 256-channel area.
-- Input impedance and backend load.
-- fHP/fLP, common-mode range, output swing.
-- CMRR and PSRR, including mismatch condition.
-- Startup/recovery, offset, MC yield, and layout risk.
+Every gate presented for human closure requires:
 
-Classify each target as either a hard must-pass requirement or a preference.
-Do not turn preferences such as exact nominal VoutCM, lowest possible power,
-smallest cap, or highest loop UGF into hard constraints unless the system
-requires them.
+1. All policy-mandated artifacts represented by valid evidence manifests.
+2. Semantic evaluation of every controlling requirement applicable to the
+   gate, using values and units parsed from current evidence.
+3. No open BLOCKER or MAJOR finding/risk.
+4. Valid provenance and no stale promotion evidence.
+5. Valid, non-expired waivers for every waived criterion; BLOCKER is not
+   waivable under the default policy.
+6. A completed independent human review bound to the current scope digest.
+7. `gatekeeper.py` reporting `eligible_for_human_close: true`.
 
-Also define evidence level:
+The gatekeeper may recommend `human_approval_required`. Only a separately
+verified human approval may make `approved` effective.
 
-- Literature-only.
-- Behavioral model.
-- Standalone transistor PVT.
-- Full-chain deterministic PVT.
-- Mismatch-aware deterministic.
-- Foundry MC.
-- Post-layout/layout-aware.
+## State And Parallel Work
 
-## Phase 2: Literature And Architecture Shortlist
+Automation-controlled states are `in_progress`, `review_ready`,
+`human_approval_required`, `changes_required`, `blocked`, and `stale`.
+`not_started` is a system/initial state; `approved` is human-only.
 
-Build an architecture matrix before transistor-level commitment. Include local
-prior branches and external references.
+If G(n) is not effectively human approved:
 
-Candidate rows may include:
+- G(n+1) remains `not_started`;
+- parallel G(n+1) analysis is allowed only with `exploratory_only: true` and
+  `promotion_eligible: false` in every evidence manifest;
+- exploratory work cannot satisfy a mandatory artifact or controlling metric;
+- later approval of G(n) does not automatically promote earlier exploratory
+  artifacts. They must be rebased, revalidated, and issued as new evidence.
 
-- Capacitive-feedback LNA plus PGA/VGA.
-- Two-stage Miller-compensated LNA.
-- Lower-gain stage-1 plus high-Z PGA.
-- DC-coupled or servo-based alternatives.
-- Direct-conversion or ADC-integrated alternatives.
+## G0: Governance Baseline
 
-Columns should include noise, power, area, fHP/fLP feasibility, input impedance,
-backend drive, CMFB complexity, pseudoR/well-bias needs, MC/layout risk, and
-why the architecture should or should not proceed.
+Entry: a project has been created but has no authoritative lifecycle state.
 
-## Phase 3: Primitive Characterization
+Mandatory outputs:
 
-Before broad circuit sweeps, build tables for:
+- instantiated project state and policy snapshot;
+- human role assignments for design owner, independent reviewer, gate approver,
+  waiver authority, interface owners, and release authority;
+- approved internal/public data boundary and PDK confidentiality plan.
 
-- gm/Id, gm/gds, ro, noise density, capacitance, and operating region.
-- MIM/MOSCAP density and voltage limits.
-- rppoly area, parasitic capacitance, resistor noise, and PVT spread.
-- pseudoR leakage, fHP impact, terminal mapping, and area.
-- Current mirror feasibility and manufacturable current levels.
+Exit intent: establish who may perform each human action and which machine
+contracts control the project. G0 contains no circuit approval.
 
-Use these tables to bound design ranges. Avoid asking Spectre to solve an
-unbounded design search.
+## G1: Requirements And Interface Baseline
 
-## Phase 4: Behavioral And System Modeling
+Entry: G0 is effectively human approved.
 
-Create behavior models before transistor trial-and-error:
+Mandatory outputs:
 
-- Full-chain gain/noise/loading/bandwidth budget.
-- Architecture-level power and area budget.
-- Loop models for CMFB, well-bias, servo, and compensation.
-- Measured-port models once transistor data exists.
+- controlling versus preference requirements with owner, comparator, value,
+  unit, applicable gates, and required evidence type;
+- evidence/verification plan;
+- electrode, ADC, PMU, and top-level interface contracts;
+- signal range, gain, bandwidth, noise, power, area, input impedance,
+  common-mode, rejection, startup/recovery, yield, test, and layout targets as
+  applicable to the project.
 
-The model must include the suspected limiting mechanism. A chain budget that
-omits CMFB offset, plant gain, or headroom cannot validate a CMFB topology.
+Provisional or inferred values may be recorded as proposals, but cannot become
+the controlling baseline without human specification ownership.
 
-## Phase 5: Transistor Implementation
+## G2: Architecture Selection
 
-Only after phases 1-4 are credible:
+Entry: G1 is effectively human approved.
+
+Mandatory outputs:
+
+- architecture matrix covering noise, power, area, gain allocation, bandwidth,
+  input/backend loading, offset, loops, pseudoR/well-bias, testability, and
+  manufacturability;
+- retained rejected alternatives and reasons;
+- architecture decision record, block allocation, and risk register.
+
+Behavioral or literature results support the decision but do not prove a
+transistor implementation.
+
+## G3: Primitive And Model Qualification
+
+Entry: G2 is effectively human approved.
+
+Mandatory outputs:
+
+- PDK/model manifest and applicable sections;
+- MOS gm/Id, gm/gds, operating region, capacitance, noise, leakage, matching,
+  reliability, and area data over the project-approved conditions;
+- passive value/spread/noise/parasitic/voltage/area data;
+- pseudoR and well-bias terminal, leakage, startup, noise, and PEX applicability;
+- documented model validity limits.
+
+Project-specific corners and device rules belong in the approved project
+overlay, not in the generic lifecycle.
+
+## G4: Behavioral Model And Verification Baseline
+
+Entry: G3 is effectively human approved.
+
+Mandatory outputs:
+
+- full-chain gain/noise/loading/power/area budget;
+- loop/plant models for CMFB, servo, well-bias, compensation, high-pass, and
+  backend interactions;
+- assumption register and correlation plan;
+- verification-plan mapping from controlling requirement to testbench and
+  evidence level.
+
+Models must include the suspected failure mechanism. Measured-port updates are
+preferred once transistor data exists.
+
+## G5: Block Schematic Candidate
+
+Entry: G4 is effectively human approved.
+
+Technical sequence:
 
 1. Implement the smallest block that tests the hypothesis.
-2. Run DC first across PVT.
-3. Check operating regions, headroom, bias replication, and common-mode.
-4. Run AC/noise/rejection/stability only after DC passes.
-5. Compare against the behavioral model and update the model when needed.
-6. Audit functional ideal elements before promoting any result.
-7. Generate a module-level report and result images for each completed block
-   before moving to the next block or full-chain integration.
+2. Run DC and operating-region checks first across approved conditions.
+3. Run AC/noise/rejection/stability only for DC-clean cases.
+4. Run startup/reset/recovery for loops, high-Z, leakage, storage, and bias
+   blocks.
+5. Replace functional ideal compensation/filter/passive elements with intended
+   PDK devices, including distributed parasitics where material.
+6. Compare with the behavioral model and record correlation.
 
-## Phase 6: Full-Chain Integration
+Mandatory evidence includes module reports, source/testbench provenance,
+DC/PVT, operating region, relevant noise/stability/recovery/interface results,
+and a functional-ideal audit. A block report or plot alone is not authorization.
 
-Promote a block only when module gates pass. Full-chain runs should answer
-system questions, not debug an unknown transistor block.
+## G6: Integrated Schematic Candidate
 
-Full-chain must report power, gain, fHP/fLP, noise, CMRR, PSRR, common-mode,
-offset, startup, and backend loading assumptions.
+Entry: all required G5 block candidates are effectively human approved.
 
-## Phase 7: Variation, Layout, And Reporting
+Mandatory evidence includes:
 
-1. Run deterministic mismatch before foundry MC.
-2. Run MC only after deterministic gates are sane.
-3. Update area with the same topology as the electrical run.
-4. Generate final plots and literature comparison rows.
-5. Generate a physical-block floorplan suggestion image.
-6. Close the branch with the decision template from `decision-rules.md`.
-7. Leave a dated handoff with exact files and open risks.
+- exact integrated schematic candidate manifest;
+- deterministic full-chain PVT;
+- parsed controlling metrics;
+- deterministic mismatch and mismatch-aware CMRR/PSRR;
+- foundry Monte-Carlo with recorded model section, seed, sample count, parsing
+  count, failures, and distribution statistics;
+- correct differential/common-mode stability, startup/recovery, high-Z, device
+  reliability, and functional-ideal audits.
 
-## Historical Lessons To Preserve
+Closing G6 creates an approved schematic candidate only. It does not establish
+layout readiness, PEX validity, post-layout signoff, or tapeout release.
 
-- Architecture B was not rejected merely because a behavior model looked bad;
-  the transistor-level CMFB plant had extreme sensitivity that the early model
-  did not capture.
-- Architecture C became stronger after comparing system budgets and backend
-  loading rather than forcing a single high-R stage-1 route.
-- Standalone CMFB models can under-model the integrated plant. Use measured-port
-  or co-design models once integrated transistor data exists.
-- Do not continue dense RC or gm sweeps after repeated structural failures.
-  Re-express the problem as required port behavior or architecture change.
-- Ideal sources, ideal resistors, or ideal VCVS blocks are useful for setting
-  requirements, but not final evidence.
-- A layout suggestion is not an area treemap. It must express signal flow,
-  differential symmetry, common-mode islands, local well-bias placement, and
-  excluded simulation proxies.
-- If sizing sweeps stop improving the design, freeze the best result as a
-  diagnostic reference and open a topology/root-cause branch.
+## G7: Layout-Ready Candidate
+
+Entry: G6 is effectively human approved.
+
+Mandatory outputs include:
+
+- schematic freeze/candidate linkage;
+- layout constraints, floorplan, matching/symmetry/shielding strategy, area
+  basis, and pre-layout parasitic stress;
+- high-Z and reliability closure for layout implementation;
+- test/trim/calibration architecture and observability;
+- ESD/pad plan and closed electrode/ADC/PMU/top-level implementation contracts;
+- PEX and DFM plans.
+
+The floorplan must show physical intent and exclude simulation-only proxies.
+G7 closure authorizes layout work for the exact candidate; it is not PEX or
+post-layout evidence.
+
+## G8: PEX Candidate
+
+Entry: G7 is effectively human approved.
+
+Mandatory outputs include DRC/LVS results, layout digest, extraction-deck
+identity, PEX netlist digest, extraction manifest, and initial extracted sanity
+checks. Schematic PVT cannot substitute for any G8 artifact.
+
+Closing G8 identifies the extracted candidate to be verified. It does not
+authorize a post-layout signoff claim.
+
+## G9: Post-Layout Signoff Candidate
+
+Entry: G8 is effectively human approved.
+
+Mandatory evidence includes post-layout DC/PVT, gain/bandwidth, noise, correct
+loop stability, startup/recovery, mismatch-aware rejection, post-layout MC,
+post-fill extraction where applicable, device reliability, DFM, and extracted
+test/ESD/interface verification.
+
+All controlling metrics are re-evaluated from extracted evidence. Pre-layout or
+schematic evidence may be retained for comparison but cannot satisfy G9
+mandatory artifacts. The default policy requires a `signoff_reviewer` for G9.
+
+## G10: Tapeout Release
+
+Entry: G9 is effectively human approved.
+
+Mandatory outputs include the immutable release manifest/BOM, layout and
+netlist digests, foundry-deck manifest, signoff summary, waiver summary,
+interface release, and data-integrity report. No open BLOCKER or MAJOR may be
+present. Under the default machine policy, the approving role for G10 is specifically
+`release_authority`; a general gate approver cannot release it. Organizations
+may impose an additional protected-branch or release-system quorum outside this
+single-record gate model.
+
+The skill and gatekeeper can assemble or validate a draft package. They cannot
+authorize tapeout release.
+
+## Evidence Freshness And Change Control
+
+Evidence is valid only for the baseline recorded in its manifest. Changes to
+source, specification, netlist/includes, testbench/stimulus, metric extractor,
+PDK/model/section, simulator/command profile, layout, extraction deck, PEX, or
+policy invalidate dependent evidence. Old approvals remain historical records
+but cease to be effective for the changed scope.
+
+A frozen baseline change requires an ECO/change record with before/after
+digests, impact analysis, stale-evidence set, regression plan, and human owner.
+An applicable record remains gate-blocking until revalidation is present and a
+verified human change authority closes or cancels it. Editing a handoff cannot
+substitute for change control.
+
+## Preserved Technical Lessons
+
+- Stop repeated sizing sweeps when the failure is structural.
+- Standalone CMFB screens do not replace integrated plant validation.
+- Map compensation by mechanism, not nominal `R*C` alone.
+- Include local pseudoR/well-bias and auxiliary circuits in noise, area, startup,
+  reliability, and matching decisions.
+- Separate signal bandwidth, stage bandwidth, CMFB crossover, pseudoR/high-pass,
+  and backend settling.
+- Use mismatch-aware rejection and consistent area basis.
+- Treat handoffs as derived navigation aids, not authoritative state.

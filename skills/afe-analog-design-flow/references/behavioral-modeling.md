@@ -1,5 +1,10 @@
 # Behavioral Modeling
 
+Behavioral output is G2/G4 evidence and may guide transistor work, but it cannot
+satisfy G5-or-later transistor, PEX, post-layout, or release artifacts. Every
+model must record assumptions, source/spec hash, revision, applicability, and
+planned correlation.
+
 ## Role
 
 Behavioral models are used to set requirements and compare architectures before

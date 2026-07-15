@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/risk-register.schema.json",
+  "title": "AFE Risk Register",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "register_revision", "risks"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "register_revision": {"type": "integer", "minimum": 0},
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "risk_id", "title", "description", "severity", "status", "owner",
+          "affected_gates", "affected_candidates", "affected_interfaces",
+          "likelihood", "impact", "mitigation", "residual_risk",
+          "decision_record_id", "waiver_id"
+        ],
+        "properties": {
+          "risk_id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["BLOCKER", "MAJOR", "MINOR"]},
+          "status": {"enum": ["open", "mitigated", "closed", "waived"]},
+          "owner": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["actor_type", "actor_id"],
+            "properties": {
+              "actor_type": {"const": "human"},
+              "actor_id": {"type": "string", "minLength": 1}
+            }
+          },
+          "affected_gates": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "affected_candidates": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "affected_interfaces": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "likelihood": {"type": "string", "minLength": 1},
+          "impact": {"type": "string", "minLength": 1},
+          "mitigation": {"type": "string", "minLength": 1},
+          "residual_risk": {"type": "string", "minLength": 1},
+          "decision_record_id": {"type": ["string", "null"]},
+          "waiver_id": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

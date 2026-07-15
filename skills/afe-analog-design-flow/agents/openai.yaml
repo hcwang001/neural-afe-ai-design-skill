@@ -1,4 +1,4 @@
 interface:
-  display_name: "Neural Recording AFE Design Flow"
-  short_description: "Tapeout-aware AFE design and verification workflow"
-  default_prompt: "Use $afe-analog-design-flow to continue an AFE analog design from handoff through decision rules, simulation gates, tapeout-readiness constraints, reporting, plots, layout suggestion, and comparison updates."
+  display_name: "Governed AFE Analog Design Flow"
+  short_description: "Human-authorized, evidence-traceable AFE lifecycle"
+  default_prompt: "Use $afe-analog-design-flow in governed mode. First load and schema-validate the instantiated project state, gate/evidence/authorization policies, requirements traceability, risks, decisions, ECO/change records, provenance, stale-evidence result, and predecessor human approval. Run the read-only gatekeeper before proposing work. Keep a next gate not_started until its predecessor has an effective verified human approval; mark parallel future-gate work exploratory_only and never use it for promotion. Preserve DC-first AFE engineering, but never write approved, complete an independent review, approve a waiver, human-close an ECO, imitate a human signature, or treat a handoff/checklist/file inventory as gate authorization."

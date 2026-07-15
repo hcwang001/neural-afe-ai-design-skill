@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/trusted-signers.schema.json",
+  "title": "AFE Trusted Human Signer Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "signers"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "signers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actor_type", "roles", "method", "public_key_base64", "enabled"],
+        "properties": {
+          "actor_type": {"const": "human"},
+          "roles": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "method": {"const": "ed25519"},
+          "public_key_base64": {"type": "string", "minLength": 1},
+          "enabled": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

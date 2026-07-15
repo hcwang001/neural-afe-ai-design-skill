@@ -1,0 +1,26 @@
+schema_version: "1.0.0"
+object_kind: analysis_result
+evidence_id: REPLACE_WITH_EVIDENCE_ID
+project_id: REPLACE_WITH_PROJECT_ID
+candidate_id: REPLACE_WITH_CANDIDATE_ID
+gate_id: REPLACE_WITH_GATE_ID
+artifact_type: REPLACE_WITH_ARTIFACT_TYPE
+evidence_level: analysis
+promotion_eligible: false
+exploratory_only: true
+contains_functional_proxy: false
+proxy_kinds: []
+status: valid
+
+artifact:
+  path: REPLACE_WITH_ARTIFACT_PATH
+  sha256: sha256:REPLACE_WITH_64_HEX_DIGEST
+
+provenance:
+  source_commit: REPLACE_WITH_SOURCE_COMMIT
+  evidence_commit: REPLACE_WITH_EVIDENCE_COMMIT
+  spec_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  timestamp_utc: REPLACE_WITH_UTC_TIMESTAMP
+  policy_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+
+metrics: []

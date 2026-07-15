@@ -20,7 +20,12 @@ def score(path: Path) -> tuple[int, float, str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Find likely current AFE handoff files.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Inventory handoff-like files by filename/mtime. This is non-authoritative; "
+            "project state and gatekeeper determine lifecycle status."
+        )
+    )
     parser.add_argument("root", nargs="?", default=".", help="Project root to scan.")
     parser.add_argument("--limit", type=int, default=8, help="Maximum files to print.")
     args = parser.parse_args()
@@ -35,6 +40,8 @@ def main() -> int:
                 found.append(path)
 
     found.sort(key=score, reverse=True)
+    print("# Non-Authoritative Handoff Inventory")
+    print("# mtime order cannot establish current project or gate state")
     for path in found[: args.limit]:
         rel = path.relative_to(root) if path.is_relative_to(root) else path
         print(f"{rel}\t{path.stat().st_size} bytes")

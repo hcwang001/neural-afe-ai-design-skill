@@ -1,0 +1,22 @@
+schema_version: "1.0.0"
+project_id: REPLACE_WITH_PROJECT_ID
+register_revision: 0
+
+risks:
+  - risk_id: RISK-EXAMPLE
+    title: REPLACE_WITH_RISK_TITLE
+    description: REPLACE_WITH_RISK_DESCRIPTION
+    severity: MAJOR
+    status: open
+    owner:
+      actor_type: human
+      actor_id: REPLACE_WITH_RISK_OWNER
+    affected_gates: [G6]
+    affected_candidates: []
+    affected_interfaces: []
+    likelihood: REPLACE_WITH_LIKELIHOOD
+    impact: REPLACE_WITH_IMPACT
+    mitigation: REPLACE_WITH_MITIGATION
+    residual_risk: REPLACE_WITH_RESIDUAL_RISK
+    decision_record_id: null
+    waiver_id: null

@@ -1,167 +1,226 @@
 ---
 name: afe-analog-design-flow
-description: Phase-gated analog front-end AFE design workflow for Codex. Use when planning, continuing, auditing, or packaging a neural-recording/biopotential AFE project from specifications through literature review, architecture selection, device/PDK characterization, behavioral modeling, decision rules for when to continue/stop/switch topology, transistor implementation, Spectre verification, tapeout-readiness constraints, device reliability, PEX/post-layout planning, test/trim/calibration planning, area/power/noise comparison, plots, layout/floorplan suggestion images, Monte-Carlo, or handoff generation.
+description: Governed analog front-end development lifecycle for Codex, covering AFE specifications, architecture comparison, PDK primitive characterization, behavioral modeling, DC-first transistor verification, mismatch-aware rejection, variation, layout readiness, PEX, post-layout signoff preparation, test/trim/calibration, ESD/interfaces, evidence provenance, and human-controlled phase gates.
 ---
 
-# Neural Recording AFE Design Flow
+# Governed AFE Analog Design Flow
 
-Use this skill to run an AFE design as a disciplined engineering program, not
-as a transcript replay. The intended flow is: define metrics, learn the
-literature, compare multiple feasible architectures, characterize devices and
-passives, build system and circuit-level behavioral models, then implement and
-verify transistor blocks with DC-first Spectre gates.
+Use this skill to perform AFE engineering inside a machine-readable lifecycle.
+The technical workflow remains evidence driven, but a document, checklist,
+simulation result, or Codex statement is never a gate authorization by itself.
 
-## Quick Start
+## Non-Negotiable Authorization Boundary
 
-1. Locate context, but do not blindly continue it.
-   - Find the newest handoff and the relevant older handoffs.
-   - Extract constraints, accepted measurements, failed branches, and lessons.
-   - Reframe the next step inside the phase-gated flow below.
-2. Define the comparison target before changing circuits.
-   - Record gain, bandwidth, input-referred noise, power, area, input impedance,
-     common-mode range, CMRR, PSRR, offset/startup, MC yield, and layout risk.
-   - Separate hard must-pass metrics from preference metrics.
-3. Build an architecture shortlist.
-   - Find literature and local prior art.
-   - Compare at least two plausible system/circuit architectures when the
-     architecture is not already frozen.
-4. Characterize primitives before sweeping full circuits.
-   - Create gm/Id, capacitance, noise, leakage, pseudoR, resistor, and area
-     tables that bound what the PDK can realistically deliver.
-5. Model the system before transistor trial-and-error.
-   - Build behavior models for each candidate architecture.
-   - Use models to allocate block specs and identify sensitive poles/loops.
-6. Implement transistor blocks only after the target is clear.
-   - Run module DC first.
-   - Run AC/noise/rejection only for DC-passing cases.
-   - Promote to full-chain only after module behavior matches the model.
-   - After each small module is completed, generate module-level simulation
-     result images and a short report before moving on.
-   - Audit functional ideal elements before making any performance claim.
-7. Report with evidence.
-   - Use mismatch-aware CMRR/PSRR for claims.
-   - Keep area basis consistent.
-   - Apply tapeout-ready constraints before calling any circuit final.
-   - Close each branch with a decision-rules review.
-   - Generate a symmetry-aware overall layout/floorplan suggestion image before
-     the final handoff.
-   - Leave a handoff with exact files, metrics, risks, and next step.
+Codex and all other automation may update a gate only to:
+
+- `in_progress`
+- `review_ready`
+- `human_approval_required`
+- `changes_required`
+- `blocked`
+- `stale`
+
+Codex must never:
+
+- write `approved`;
+- create or imitate a human signature or signature-verification result;
+- mark an independent review complete;
+- approve a waiver;
+- close or cancel an ECO/change record as a human authority;
+- turn a Markdown checkbox, report statement, or filename hit into gate state;
+- start gate `G(n+1)` before `G(n)` has an effective, verified human approval;
+- use `exploratory_only` evidence for candidate promotion.
+
+`not_started` is an initial/system state. `approved` is a human-only state and
+is effective only when `scripts/gatekeeper.py` validates the exact approval
+record, independent review, scope digest, current evidence, and all preceding
+gates. The gatekeeper is read-only and may recommend
+`human_approval_required`; it never grants approval.
+
+## Machine-Readable Source Of Truth
+
+Before continuing a project, locate and validate its instantiated project
+state against:
+
+- `governance/schemas/project-state.schema.json`
+- `governance/policies/default-gates.yaml`
+- `governance/policies/default-evidence.yaml`
+- `governance/policies/default-authorization.yaml`
+
+The project state, evidence manifests, requirements traceability, risk
+register, technical decision records, ECO/change records, independent review,
+waiver records, and human approval records are the lifecycle source of truth.
+Handoffs and reports are derived views. Instantiated records are checked at
+runtime against their JSON Schemas; schemas are not documentation-only.
+
+If no instantiated project state exists, create only a draft from
+`governance/templates/project-state.yaml`, leave it `template_only`, and request
+the required human owners and baselines. Do not infer an approved state from
+legacy handoffs.
+
+Run, at minimum:
+
+```text
+python scripts/provenance_check.py --state <project-state.yaml>
+python scripts/stale_evidence_check.py --state <project-state.yaml>
+python scripts/gatekeeper.py --state <project-state.yaml> --gate <Gx>
+```
+
+## Governed Lifecycle
+
+| Gate | Controlled output |
+|---|---|
+| G0 | Governance baseline |
+| G1 | Requirements and electrode/ADC/PMU/top-level interface baseline |
+| G2 | Architecture candidate |
+| G3 | Qualified primitive/model baseline |
+| G4 | Behavioral-model and verification baseline |
+| G5 | Block schematic candidate |
+| G6 | Integrated schematic candidate |
+| G7 | Layout-ready candidate |
+| G8 | PEX candidate |
+| G9 | Post-layout signoff candidate |
+| G10 | Tapeout release package |
+
+The exact entry criteria, exit criteria, mandatory artifacts, and evidence
+levels are defined in `governance/policies/default-gates.yaml` and
+`references/workflow.md`. The policy, not this prose summary, is controlling.
+
+Foundry MC is mandatory at G6 and G9 under the default policy. PEX is mandatory
+at G8 and G9. Test/trim/calibration and ESD/top-level implementation closure are
+mandatory at G7, with extracted/interface verification at G9. Before those
+gates, related work may be exploratory but must not be promotion evidence.
+
+## Engineering Sequence
+
+1. Validate governance state and predecessor authorization.
+2. Define controlling requirements and required evidence types before circuit work.
+3. Compare multiple feasible architectures and retain rejected alternatives.
+4. Characterize MOS, passive, leakage, pseudoR, well-bias, reliability, and
+   layout-feasibility primitives before broad circuit sweeps.
+5. Build full-chain budgets, loop/plant models, and measured-port updates.
+6. Implement the smallest discriminating transistor block and run DC first.
+7. Run AC/noise/rejection/stability only for DC-clean cases.
+8. Replace functional ideal aids with verified PDK devices before transistor
+   promotion evidence is created.
+9. Integrate only reviewed block candidates; run deterministic PVT, mismatch,
+   startup/recovery, and the gate-mandated variation evidence.
+10. Close layout, PEX, test/trim/calibration, ESD, DFM, and external interfaces
+    at their policy-defined gates.
+11. Generate a derived handoff that reports machine state without changing it.
+
+If the predecessor is not effectively human approved, the next gate must remain
+`not_started`. Parallel activity is permitted only when every resulting
+manifest has `exploratory_only: true` and `promotion_eligible: false`.
+
+## Technical Invariants To Preserve
+
+- Do not optimize a metric until the dominant mechanism is identified.
+- Do not run blind W/L/current sweeps when a topology, leakage, matching,
+  reference-path, or interface limitation dominates.
+- Do not run full-chain sweeps to debug an unknown module.
+- Do not trust a behavioral model that omits the suspected failure mechanism.
+- Do not treat behavioral or functional ideal elements as transistor evidence.
+- Do not treat equal ideal `R*C` products as physically equivalent. Preserve
+  pole, zero, DC-blocking, damping, and distributed-parasitic roles when mapping
+  compensation/filter networks to PDK devices.
+- Use mismatch-aware CMRR/PSRR for design claims; nominal symmetry is only a
+  diagnostic upper bound.
+- Audit every pseudoR terminal and intent: `PSUB`, `DNW`, `PWELL`, `A`, `B`.
+- Treat well-bias as leakage/low-frequency control unless system evidence
+  requires wideband behavior.
+- Audit every high-Z node for DC path, leakage, startup/reset recovery,
+  parasitics, noise, rejection, shielding, and PEX sensitivity.
+- Audit MOS terminal stress, voltage domains, startup/switching stress, bias
+  realizability, matching, and manufacturability.
+- Keep area basis consistent and tie the floorplan to the electrically verified
+  topology. A floorplan is not an area treemap.
+- Keep project-specific bands, corners, temperature, PM, mismatch, device, and
+  MC thresholds in the approved project specification/overlay, not as universal
+  skill constants.
+- Do not publish PDK/model files, raw PEX, PSF/raw simulator databases, or
+  private paper PDFs. Internal manifests may record identifiers and digests.
+
+## Evidence And Freshness Rules
+
+Keep object semantics explicit: a decision record with `object_kind: proposal`
+is a proposal; an evidence manifest with `object_kind: analysis_result` is an
+analysis result; a candidate is the gate-scoped `candidate_id`; and it becomes
+an approved candidate only when a verified human approval is effective for the
+current scope. None of these labels are interchangeable.
+
+Each promotion manifest must bind the candidate to source/evidence commits,
+spec/netlist/testbench hashes, PDK/model identity, simulator and command,
+metric-extractor hash, timestamp, and artifact digest. MC and PEX/post-layout
+levels add their policy-required fields.
+
+The following changes invalidate dependent evidence until revalidated:
+
+- source or included netlist;
+- specification or requirements traceability;
+- testbench, stimulus, measurement, or metric-extraction code;
+- PDK release, model hash, model section, simulator, or command profile;
+- layout, extraction deck, or PEX netlist;
+- governing policy or schema baseline.
+
+The `policy_hash` field is the canonical governance-contract hash over all
+three loaded policies, the shipped JSON Schema bundle, and the read-only
+governance engine scripts. Changing any of them causes a mismatch until the
+baseline and dependent evidence are reissued.
+
+Legacy or other-project evidence may be retained as `exploratory_only` or
+`informative`, but project/candidate mismatches prohibit its use for promotion.
+
+## Review, Findings, Waivers, And Decisions
+
+- Use `references/project-gate-review.md` for project gates.
+- Use `references/publication-review.md` only for publishing the skill.
+- `BLOCKER` and `MAJOR` findings must not remain open when a gate is presented
+  for human closure.
+- BLOCKER is non-waivable under the default policy.
+- A MAJOR waiver must have exact scope, human owner, expiry, compensating
+  controls, revalidation triggers, and verified human authorization.
+- Technical recommendations belong in decision records. They do not authorize
+  promotion or close a gate.
+- Every baseline-affecting ECO/change record is scope-bound. An applicable open
+  change blocks promotion until revalidation is recorded and the change is
+  closed or cancelled by a verified human change authority.
 
 ## Reference Routing
 
-Read only the references needed for the current task:
+- `references/workflow.md`: controlling lifecycle semantics and gate sequence.
+- `references/project-gate-review.md`: independent project review procedure.
+- `references/publication-review.md`: public-skill publication review.
+- `references/handoff-template.md`: derived, non-authoritative handoff.
+- `references/migration-guide.md`: fail-closed import of legacy projects and
+  evidence without grandfathered approvals.
+- `references/simulation-gates.md`: DC-first simulation order and evidence
+  meaning; simulation gates are not lifecycle authorization.
+- `references/tapeout-ready-constraints.md`: reliability, layout, PEX,
+  startup/recovery, test/trim/calibration, ESD, and DFM technical constraints.
+- `references/decision-rules.md`: technical branch decisions and stop/switch
+  rules; governance policy controls authorization.
+- `references/specs-and-architecture.md`: requirements and architecture work.
+- `references/device-sweeps-and-tables.md`: primitive characterization.
+- `references/behavioral-modeling.md`: system and measured-port models.
+- `references/block-playbook.md`: block-level technical guidance.
+- `references/pseudo-resistor-well-bias.md`: pseudoR/well-bias implementation.
+- `references/netlist-patterns.md`: sanitized netlists and connectivity review.
+- `references/area-and-comparison.md`: area accounting.
+- `references/layout-floorplan.md`: physical planning.
+- `references/plots-and-reporting.md`: plot/report generation.
+- `references/design-casebook.md`: informative historical lessons only; never
+  current project state or promotion evidence.
 
-- `references/workflow.md`: phase-gated end-to-end design flow.
-- `references/decision-rules.md`: decision rules for when to continue,
-  stop sweeping, switch topology, or promote a candidate.
-- `references/specs-and-architecture.md`: metrics, literature review, and
-  architecture comparison.
-- `references/device-sweeps-and-tables.md`: PDK primitive characterization and
-  parameter tables.
-- `references/behavioral-modeling.md`: system, loop, and measured-port models.
-- `references/design-casebook.md`: curated project decisions, failure modes,
-  and reusable AFE design lessons.
-- `references/block-playbook.md`: block-level guidance for stage-1, stage-2,
-  CMFB, pseudoR, well-bias, and backend interface work.
-- `references/simulation-gates.md`: DC/PVT/noise/rejection/STB/startup/MC order
-  and pass/fail conventions.
-- `references/netlist-patterns.md`: netlist cleanup, dependency control, naming,
-  and public artifact rules.
-- `references/pseudo-resistor-well-bias.md`: pseudoR1/pseudoR2, PSUB/DNW/PWELL
-  connectivity, and well-bias driver strategy.
-- `references/area-and-comparison.md`: area accounting and literature table
-  update rules.
-- `references/layout-floorplan.md`: final physical-block layout suggestion
-  image rules.
-- `references/tapeout-ready-constraints.md`: device sizing, reliability,
-  layout feasibility, PEX, startup/recovery, test, trim, calibration, ESD, and
-  DFM rules for promoting a circuit toward tapeout.
-- `references/plots-and-reporting.md`: gain/noise/CMRR/PSRR plots and final
-  report formatting.
-- `references/handoff-template.md`: compact template for final handoffs.
-- `references/review-checklist.md`: pre-publication and human-review checklist.
-- `references/forward-test-prompts.md`: fresh-thread prompts for validating
-  whether the skill generalizes before GitHub publication.
+## Scripts
 
-## Phase Gates
+- `scripts/gatekeeper.py`: authoritative read-only gate readiness evaluator.
+- `scripts/provenance_check.py`: provenance and artifact-integrity checker.
+- `scripts/stale_evidence_check.py`: baseline dependency/freshness checker.
+- `scripts/candidate_report_check.py`: non-authoritative file inventory only.
+- `scripts/pseudor_connectivity_audit.py`: first-pass pseudoR connectivity
+  extractor; independent human review remains required.
+- `scripts/extract_metrics.py`: reporting helper only unless its output is bound
+  through an evidence manifest and current extractor hash.
 
-1. **Spec and evidence gate**
-   - Define must-pass and stretch metrics before architecture or sizing work.
-   - Specify what evidence is acceptable for each metric: literature, behavior
-     model, standalone transistor simulation, full-chain PVT, MC, or layout.
-2. **Literature and architecture gate**
-   - Produce an architecture matrix with at least noise, power, area, gain,
-     bandwidth, input impedance, CMRR/PSRR, offset handling, complexity, and
-     manufacturability.
-   - Keep rejected architectures with explicit reasons.
-3. **Primitive characterization gate**
-   - Build or update device/passive lookup tables before broad circuit sweeps.
-   - Use these tables to choose realistic gm/Id, W/L, current density, resistor,
-     capacitor, pseudoR, and well-bias ranges.
-4. **Behavioral model gate**
-   - Build a chain budget for each viable architecture.
-   - Build focused loop/plant models for sensitive blocks such as CMFB,
-     pseudoR/well-bias, high-pass corners, and backend loading.
-   - Prefer measured-port models after transistor-level data exists.
-5. **Block implementation gate**
-   - Implement one block at a time.
-   - Verify DC, operating region, power, noise, loop stability, and interfaces.
-   - Save module-level simulation plots/images and a short module report for
-     every completed block.
-   - Do not run full-chain sweeps to debug a block-level unknown.
-6. **Full-chain integration gate**
-   - Run deterministic PVT full-chain checks.
-   - Verify input/output common-mode, gain, fHP/fLP, noise, CMRR, PSRR, and
-     startup.
-7. **Variation and layout gate**
-   - Run deterministic mismatch, then foundry MC.
-   - Update area using the same topology as the electrical run.
-   - Generate an overall physical-block floorplan suggestion image.
-   - Mark final numbers as pre-layout or layout-aware.
-8. **Tapeout-candidate gate**
-   - Read `references/tapeout-ready-constraints.md`.
-   - Audit MOS sizing, reliability, voltage domains, high-Z nodes, bias plans,
-     capacitor/resistor layout feasibility, startup/recovery, PEX path, test
-     hooks, trim/calibration, ESD/top-level interfaces, and DFM risks.
-   - Do not call a candidate tapeout-ready from schematic PVT alone.
-
-## Core Invariants
-
-- Do not continue a branch just because it is the latest transcript state.
-- Do not optimize a metric until the dominant mechanism is identified.
-- Do not promote a candidate unless it passes the appropriate gate without
-  functional ideal aids.
-- Do not keep sweeping device sizes when the failure pattern indicates a
-  topology, leakage, matching, or reference-path limitation.
-- Do not run blind sweeps when the limiting mechanism is unknown.
-- Do not trust a behavioral model that omits the suspected failure mechanism.
-- Read `references/design-casebook.md` before re-opening a topology that was
-  previously paused, rejected, or demoted.
-- Do not claim nominal/symmetric CMRR or PSRR externally. Use deterministic
-  mismatch curves or MC distributions.
-- For pseudoR devices, explicitly audit terminal order and node intent:
-  `PSUB`, `DNW`, `PWELL`, `A`, `B`.
-- For well-bias, distinguish slow leakage compensation from wideband buffering.
-- Do not present an area treemap as a layout suggestion. A floorplan must show
-  signal flow, differential symmetry, common-mode islands, local feedback loops,
-  and proxy exclusions.
-- Do not promote a candidate solely because schematic PVT passes. It must be
-  physically realizable, reliability-clean, mismatch-aware, startup-safe, and
-  backed by a PEX and test/trim plan when moving toward tapeout.
-- Keep scripts and netlists reproducible; avoid hard-coded local-only paths in
-  GitHub-ready artifacts.
-- Do not publish PDK files, foundry model files, raw PEX netlists, PSF data,
-  Spectre raw databases, or private paper PDFs.
-
-## Useful Scripts
-
-- `scripts/find_latest_handoff.py`: locate likely current handoff files.
-- `scripts/extract_metrics.py`: extract compact metrics from AFE run CSVs.
-- `scripts/make_four_plot_panel.py`: stitch four PNG plots into a 2x2 panel.
-- `scripts/candidate_report_check.py`: check a candidate report/run directory
-  for expected evidence artifacts before review or handoff.
-- `scripts/pseudor_connectivity_audit.py`: extract pseudoR-like instance node
-  mappings from netlists for PSUB/DNW/PWELL/A/B connectivity review.
-
-These scripts are helpers, not the source of truth. Read generated reports and
-CSV files when the task is high-stakes or when a result looks surprising.
+No script in this skill is authorized to manufacture human approval.

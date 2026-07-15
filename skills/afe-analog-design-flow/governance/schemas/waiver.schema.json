@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/waiver.schema.json",
+  "title": "AFE Gate Criterion Waiver",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "waiver_id",
+    "project_id",
+    "gate_id",
+    "severity",
+    "status",
+    "scope",
+    "baseline_digest",
+    "owner",
+    "rationale",
+    "compensating_controls",
+    "expires_at",
+    "revalidation_triggers",
+    "approvals"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "waiver_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "gate_id": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+    "severity": {"enum": ["MAJOR", "MINOR"]},
+    "status": {"enum": ["proposed", "active", "expired", "revoked"]},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "criterion_ids", "evidence_ids"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "criterion_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "baseline_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id"],
+      "properties": {
+        "actor_type": {"const": "human"},
+        "actor_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "rationale": {"type": "string", "minLength": 1},
+    "compensating_controls": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "expires_at": {"type": "string", "format": "date-time"},
+    "revalidation_triggers": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "approvals": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actor_type", "actor_id", "role", "signed_at", "verification"],
+        "properties": {
+          "actor_type": {"const": "human"},
+          "actor_id": {"type": "string", "minLength": 1},
+          "role": {"enum": ["waiver_approver", "design_authority"]},
+          "signed_at": {"type": "string", "format": "date-time"},
+          "verification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["method", "key_id", "signature_base64"],
+            "properties": {
+              "method": {"const": "ed25519"},
+              "key_id": {"type": "string", "minLength": 1},
+              "signature_base64": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "active"}}},
+      "then": {"properties": {"approvals": {"minItems": 1}}}
+    }
+  ]
+}

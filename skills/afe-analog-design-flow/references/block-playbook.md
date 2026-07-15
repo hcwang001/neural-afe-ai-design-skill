@@ -3,6 +3,11 @@
 Use this reference for block-level design judgment. It complements the phase
 flow and casebook with practical rules for common AFE blocks.
 
+This playbook is technical guidance only. Numeric gains, voltages, loads,
+capacitances, bandwidths, and device examples are historical starting points;
+the approved project requirements/PDK overlay controls. "Promoted" means
+candidate nomination for machine/human review, never gate approval.
+
 ## Stage-1 LNA
 
 ### What Stage-1 Should Own
@@ -36,6 +41,20 @@ flow and casebook with practical rules for common AFE blocks.
 - Stage-1 `Cin/Cf` values below about 50 fF on the feedback side are
   layout-risk primitives; require unit-cap, parasitic, mismatch, and PEX
   gain-error review before final claims.
+- Include pseudoR well-bias drivers, local servos, and bias mirrors in the
+  Stage-1 noise-contribution table. Position-aware sizing can outperform
+  uniform scaling when one feedback cell is closest to the summing node.
+- A pseudoR replacement can lower low-frequency noise yet worsen integrated
+  input-referred noise by reducing signal gain through PEX capacitance. Review
+  gain and noise together.
+- If gain must be recovered, prefer increasing Cin only while input impedance,
+  area, and mismatch remain acceptable; do not shrink an already
+  parasitic-dominated Cf by default.
+- Characterize natural artifact recovery on the fHP time scale. When fast
+  recovery relies on real reset MOS, verify the reset-assisted sequence and
+  carry reset/blanking into the top-level interface requirements.
+- A promoted Stage-1 core should expose external bias nodes explicitly and
+  keep ideal reference currents in a separate regression harness.
 
 ## Stage-2 PGA/VGA
 
@@ -56,6 +75,9 @@ flow and casebook with practical rules for common AFE blocks.
   offset.
 - Backend load should be explicit: preferred load assumptions such as 50 fF/side
   should be simulated and recorded.
+- Treat physical CMFB compensation as part of the stage, not as a schematic
+  annotation. Its resistor body capacitance, spread, noise, and area can change
+  both the loop and the apparent area optimum.
 
 ## CMFB
 
@@ -83,6 +105,10 @@ flow and casebook with practical rules for common AFE blocks.
   respond to differential signal, and huge compensation caps as the primary
   fix.
 - Prefer measured-port/co-design models when transistor data exists.
+- A series CMFB resistor may create the required phase-lead zero; preserving
+  only the nominal `R*C` product can destroy stability or DC behavior.
+- For multi-megaohm PDK resistors, include distributed body/routing capacitance
+  when it is comparable to the explicit compensation capacitor.
 - Do not call a CMFB loop tapeout-ready from a single-ended `iprobe` result;
   use a proper differential/CMFB loop method and include startup/reset
   recovery.

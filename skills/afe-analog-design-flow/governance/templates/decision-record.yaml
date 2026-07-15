@@ -1,0 +1,21 @@
+schema_version: "1.0.0"
+decision_id: REPLACE_WITH_DECISION_ID
+project_id: REPLACE_WITH_PROJECT_ID
+gate_id: REPLACE_WITH_GATE_ID
+candidate_id: REPLACE_WITH_CANDIDATE_ID
+
+# Kinds distinguish technical work from authorization. This record never closes
+# a gate and must not use approved as an authorization state.
+object_kind: proposal
+authorization_state: draft
+created_by:
+  actor_type: codex
+  actor_id: REPLACE_WITH_AGENT_ID
+created_at: REPLACE_WITH_UTC_TIMESTAMP
+
+question: REPLACE_WITH_DECISION_QUESTION
+alternatives: []
+analysis_evidence_ids: []
+recommendation: REPLACE_WITH_TECHNICAL_RECOMMENDATION
+risks: []
+next_action: REPLACE_WITH_NEXT_ACTION

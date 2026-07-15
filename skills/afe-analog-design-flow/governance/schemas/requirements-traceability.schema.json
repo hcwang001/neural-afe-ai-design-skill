@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/requirements-traceability.schema.json",
+  "title": "AFE Requirements Traceability",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "spec_hash", "requirements"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "spec_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_id", "description", "classification", "status",
+          "owner", "applies_to_gates", "metric", "operator", "value",
+          "unit", "aggregation", "evidence_artifact_types"
+        ],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "classification": {"enum": ["controlling", "preference"]},
+          "status": {"enum": ["proposed", "active", "superseded", "retired"]},
+          "owner": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["actor_type", "actor_id"],
+            "properties": {
+              "actor_type": {"const": "human"},
+              "actor_id": {"type": "string", "minLength": 1}
+            }
+          },
+          "applies_to_gates": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "metric": {"type": "string", "minLength": 1},
+          "operator": {"enum": [">=", ">", "<=", "<", "==", "between"]},
+          "value": {
+            "oneOf": [
+              {"type": "number"},
+              {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
+            ]
+          },
+          "unit": {"type": "string"},
+          "aggregation": {"enum": ["all", "any"]},
+          "evidence_artifact_types": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

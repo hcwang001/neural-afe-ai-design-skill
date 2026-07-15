@@ -1,5 +1,10 @@
 # Plots And Reporting
 
+Plots and reports are derived views, not gate state. Every promoted claim must
+reference a current evidence ID and parsed controlling metric. Bands, corner
+labels, and plot frequencies shown below are historical neural-AFE examples;
+the approved project overlay controls.
+
 ## Module-Level Reports
 
 After every small module design is completed, generate a human-readable module
@@ -47,13 +52,14 @@ the final plot and explain why.
 ## Plot Rules
 
 - Use all deterministic PVT corners in one figure when readable.
-- Label corners consistently: TT27, TT85, SS27, SS85, FF27, FF85.
+- Label project-defined conditions consistently. `TT27`, `TT85`, `SS27`,
+  `SS85`, `FF27`, and `FF85` are legacy example labels only.
 - Do not plot nominal/symmetric CMRR/PSRR as final rejection when mismatch-aware
   data exists.
 - Keep source CSV paths in the report.
 - Use `scripts/make_four_plot_panel.py` to create a 2x2 overview image.
-- Use `scripts/candidate_report_check.py` as a first-pass artifact checklist
-  before final review or handoff.
+- Use `scripts/candidate_report_check.py` only to discover candidate-like files.
+  Its hits are not metric evaluation, evidence, readiness, or gate state.
 - Generate the overall floorplan suggestion image separately; do not merge it
   into the four electrical performance plots.
 

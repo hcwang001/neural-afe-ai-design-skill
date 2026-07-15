@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/gate-review.schema.json",
+  "title": "AFE Independent Gate Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "review_id",
+    "project_id",
+    "gate_id",
+    "candidate_id",
+    "candidate_authors",
+    "scope_digest",
+    "status",
+    "reviewer",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "review_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "gate_id": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "candidate_authors": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "scope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["in_progress", "changes_required", "completed"]},
+    "reviewer": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "actor_type",
+            "actor_id",
+            "role",
+            "independent",
+            "signed_at",
+            "verification"
+          ],
+          "properties": {
+            "actor_type": {"const": "human"},
+            "actor_id": {"type": "string", "minLength": 1},
+            "role": {"enum": ["independent_reviewer", "signoff_reviewer"]},
+            "independent": {"const": true},
+            "signed_at": {"type": "string", "format": "date-time"},
+            "verification": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["method", "key_id", "signature_base64"],
+              "properties": {
+                "method": {"const": "ed25519"},
+                "key_id": {"type": "string", "minLength": 1},
+                "signature_base64": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "severity", "status", "summary"],
+        "properties": {
+          "finding_id": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["BLOCKER", "MAJOR", "MINOR"]},
+          "status": {"enum": ["open", "closed", "waived"]},
+          "summary": {"type": "string", "minLength": 1},
+          "waiver_id": {"type": ["string", "null"]}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "completed"}}},
+      "then": {"properties": {"reviewer": {"type": "object"}}}
+    }
+  ]
+}

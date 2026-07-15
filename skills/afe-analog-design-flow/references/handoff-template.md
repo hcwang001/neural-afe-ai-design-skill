@@ -1,125 +1,122 @@
-# Handoff Template
+# Derived Handoff Template
 
-Use this as a compact final handoff shape.
+## Status And Authority
+
+This handoff is a read-only view generated from project state and gatekeeper
+output. It must not be edited to change lifecycle state. Statements such as
+"passed", "approved", or "final" have no authority unless the referenced gate
+has an effective human approval record for the displayed scope digest.
 
 ```markdown
-# Current Thread Handoff - YYYY-MM-DD - <Candidate Or Phase>
+# AFE Project Handoff - <generated UTC timestamp>
 
-## Current Phase
+## Governance Snapshot
 
-- Phase: spec / literature / architecture / primitive tables / behavioral model / block implementation / full-chain / variation / layout / tapeout-candidate / post-layout / signoff
-- Active objective:
-- Latest user request:
-- Source handoffs used:
+- Project ID: <from project state>
+- State revision: <from project state>
+- Source state file: <path>
+- Gate policy ID/version: <from policy>
+- Evidence policy ID/version: <from policy>
+- Authorization policy ID/version: <from policy>
+- Policy/schema contract hash: <current baseline policy_hash>
+- Generator version/hash: <tool identity>
+- This report is authoritative: no
 
-## Specifications
+## Current Gate Evaluation
 
-| metric | preferred | acceptable | current evidence | status |
-|---|---:|---:|---|---|
-| Gain | | | | |
-| Noise | | | | |
-| Power | | | | |
-| Area | | | | |
-| fHP/fLP | | | | |
-| CMRR/PSRR | | | | |
-| Input/backend interface | | | | |
+- Gate ID/name: <from gatekeeper>
+- Candidate ID: <from project state>
+- Candidate stage: governance baseline / requirements baseline / architecture
+  candidate / primitive baseline / behavioral baseline / block schematic
+  candidate / integrated schematic candidate / layout-ready candidate / PEX
+  candidate / post-layout signoff candidate / tapeout release package
+- Recorded status: <from project state>
+- Gatekeeper enforcement/recommendation: <`not_started` enforcement, an allowed
+  automation state, or none when a human approval is merely observed>
+- Scope digest: <gatekeeper-computed digest>
+- Eligible for human close: <true/false from gatekeeper>
+- Effective human approval observed: <true/false from gatekeeper>
+- Can next gate start: <true/false from gatekeeper>
 
-## Architecture State
+Do not manually alter the preceding values.
 
-| architecture | status | evidence | reason |
+## Predecessor Authorization
+
+| predecessor | effective approval | approval record | scope current |
 |---|---|---|---|
-| | active | | |
-| | fallback | | |
-| | rejected | | |
+| <derived> | <derived> | <reference or none> | <derived> |
 
-## Current Topology
+## Baseline Fingerprints
 
-- Stage-1:
-- Stage-1 Cin/Cf:
-- Stage-1 pseudoR/well-bias:
-- Interstage LPF:
-- Stage-2:
-- Stage-2 pseudoR/well-bias:
-- Stage-2 CMFB:
-- Output/MUX/ADC proxy:
+- Source commit:
+- Spec hash:
+- Netlist/include hash:
+- Testbench/stimulus hash:
+- PDK ID/release/model hash/sections:
+- Simulator/version/executable hash:
+- Command profile hash:
+- Metric extractor hash:
+- Layout hash, when applicable:
+- PEX/extraction-deck hash, when applicable:
 
-## Models And Tables
+## Requirements Traceability
 
-- Literature comparison:
-- Primitive/device tables:
-- Behavioral/system models:
-- Measured-port models:
-- Model limitations:
+| requirement ID | controlling/preference | comparator | current parsed value | unit | evidence ID | evaluation |
+|---|---|---|---:|---|---|---|
+| <derived> | | | | | | |
 
-## Latest Passed Gates
+## Mandatory Artifact Evaluation
 
-| gate | status | report |
-|---|---:|---|
-| Module DC/PVT | | |
-| Module AC/noise/rejection | | |
-| Module reports/images | | |
-| Full-chain DC/PVT/noise/rejection | | |
-| Mismatch-aware CMRR/PSRR | | |
-| STB/startup | | |
-| MC | | |
-| Tapeout readiness audit | | |
-| PEX/post-layout | | |
+| artifact type | evidence ID | evidence level | promotion eligible | provenance valid | current/stale |
+|---|---|---|---|---|---|
+| <derived> | | | | | |
 
-## Key Metrics
+- Missing mandatory artifact types: <derived list>
+- Exploratory-only artifacts: <derived list; explicitly excluded from promotion>
+- Functional ideal/proxy findings: <derived list>
 
-- Full-chain power:
-- Gain at 1 kHz:
-- Noise 300 Hz to 10 kHz:
-- fHP:
-- fLP:
-- Mismatch-aware CMRR:
-- Mismatch-aware VDD PSRR:
-- Output offset / CM:
-- Area basis and area/ch:
-- Layout/floorplan suggestion:
+## Independent Review And Findings
 
-## Tapeout Readiness
+- Review record: <reference or none>
+- Review status: <derived>
+- Reviewer identity/signature verification: <derived; never invented>
 
-- Device sizing audit:
-- Reliability/voltage-domain audit:
-- Precision cap/resistor/pseudoR layout risk:
-- High-Z node audit:
-- Bias/reference implementation plan:
-- Startup/reset/recovery evidence:
-- CMRR/PSRR evidence tier: nominal / deterministic mismatch / PEX+MC
-- Parasitic stress / PEX plan:
-- Test/trim/calibration hooks:
-- ESD/pad/top-level interface plan:
-- DFM/open layout risks:
+| finding ID | severity | status | waiver ID | owner/next action |
+|---|---|---|---|---|
+| <derived> | | | | |
 
-## Important Files
+## Waivers And Risks
 
-- Netlist:
-- Script:
-- Report:
-- Module reports:
-- Module result images:
-- Curves:
-- Plots:
-- Area/comparison:
-- Floorplan image:
+- Valid active waivers: <derived>
+- Invalid/expired waivers: <derived>
+- Open BLOCKER risks: <derived>
+- Open MAJOR risks: <derived>
+- Open MINOR risks: <derived>
 
-## Decisions
+## Technical Snapshot
 
-- Branch closure:
-  - Gates passed:
-  - Functional ideal elements:
-  - Worst corner and reason:
-  - Limiting mechanism:
-  - Continue sizing sweep, topology/root-cause branch, or promote:
-  - Metrics improved / worsened:
-  - Candidate status:
-  - Next smallest discriminating experiment:
-- Accepted:
-- Rejected:
-- Open risks:
+- Architecture and active topology:
+- DC/PVT and operating-region summary:
+- Gain/bandwidth/noise summary:
+- Mismatch-aware CMRR/PSRR summary:
+- Stability and startup/recovery summary:
+- High-Z and pseudoR/well-bias summary:
+- Reliability/voltage-domain summary:
+- Area/floorplan/layout-readiness summary:
+- MC status, when mandatory:
+- PEX/post-layout status, when mandatory:
+- Test/trim/calibration and ESD/interface status, when mandatory:
 
-## Next Step
+Every value above must cite an evidence ID; a path or plot alone is insufficient.
 
-1. <one concrete next action>
+## Decisions And Changes
+
+- Decision record IDs:
+- ECO/change-control IDs:
+- Rejected alternatives retained:
+- Current limiting mechanism:
+- Proposed next action:
+
+The proposed action is not authorization to start a gate whose predecessor is
+not effectively human approved. Such work must remain exploratory-only.
 ```

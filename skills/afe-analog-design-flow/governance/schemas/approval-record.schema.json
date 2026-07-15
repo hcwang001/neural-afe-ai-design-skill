@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/approval-record.schema.json",
+  "title": "AFE Human Gate Approval Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_id",
+    "project_id",
+    "gate_id",
+    "candidate_id",
+    "review_id",
+    "review_digest",
+    "scope_digest",
+    "decision",
+    "approver"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "approval_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "gate_id": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "review_id": {"type": "string", "minLength": 1},
+    "review_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "scope_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "decision": {"enum": ["approved", "rejected"]},
+    "approver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id", "role", "signed_at", "verification"],
+      "properties": {
+        "actor_type": {"const": "human"},
+        "actor_id": {"type": "string", "minLength": 1},
+        "role": {"enum": ["gate_approver", "design_authority", "release_authority"]},
+        "signed_at": {"type": "string", "format": "date-time"},
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "key_id", "signature_base64"],
+          "properties": {
+            "method": {"const": "ed25519"},
+            "key_id": {"type": "string", "minLength": 1},
+            "signature_base64": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

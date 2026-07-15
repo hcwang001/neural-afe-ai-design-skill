@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/evidence-manifest.schema.json",
+  "title": "AFE Evidence Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "object_kind",
+    "evidence_id",
+    "project_id",
+    "candidate_id",
+    "gate_id",
+    "artifact_type",
+    "evidence_level",
+    "promotion_eligible",
+    "exploratory_only",
+    "contains_functional_proxy",
+    "proxy_kinds",
+    "status",
+    "artifact",
+    "provenance",
+    "metrics"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "object_kind": {"const": "analysis_result"},
+    "evidence_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "gate_id": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+    "artifact_type": {"type": "string", "minLength": 1},
+    "evidence_level": {
+      "enum": [
+        "literature",
+        "analysis",
+        "behavioral",
+        "primitive",
+        "transistor_schematic",
+        "monte_carlo",
+        "layout_planning",
+        "pex",
+        "post_layout",
+        "post_layout_monte_carlo",
+        "release"
+      ]
+    },
+    "promotion_eligible": {"type": "boolean"},
+    "exploratory_only": {"type": "boolean"},
+    "contains_functional_proxy": {"type": "boolean"},
+    "proxy_kinds": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "status": {"enum": ["valid", "stale", "invalid", "superseded"]},
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source_commit",
+        "evidence_commit",
+        "spec_hash",
+        "timestamp_utc",
+        "policy_hash"
+      ],
+      "properties": {
+        "source_commit": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "evidence_commit": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "spec_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "netlist_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "testbench_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "command_profile_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "metric_extractor_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "policy_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "layout_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "pex_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "extraction_deck_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "timestamp_utc": {"type": "string", "format": "date-time"},
+        "command": {"type": "string"},
+        "pdk": {
+          "type": "object",
+          "properties": {
+            "id": {"type": "string"},
+            "release": {"type": "string"},
+            "model_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+            "model_sections": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "simulator": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "version": {"type": "string"},
+            "executable_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+          }
+        },
+        "monte_carlo": {
+          "type": "object",
+          "properties": {
+            "seed": {"type": ["integer", "string"]},
+            "sample_count": {"type": "integer", "minimum": 1},
+            "statistical_section": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement_id", "metric", "value", "unit"],
+        "properties": {
+          "requirement_id": {"type": "string", "minLength": 1},
+          "metric": {"type": "string", "minLength": 1},
+          "value": {"type": ["number", "string"]},
+          "unit": {"type": "string"},
+          "condition": {"type": "string"}
+        }
+      }
+    }
+  }
+}

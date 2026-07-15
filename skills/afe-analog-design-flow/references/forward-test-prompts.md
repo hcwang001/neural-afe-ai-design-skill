@@ -1,5 +1,10 @@
 # Forward-Test Prompts
 
+These prompts are qualitative usability checks only. They are not governance
+acceptance tests and cannot replace `tests/test_gatekeeper.py` or machine policy
+validation. A fresh thread must not be asked to infer gate approval from the
+expected behavior text.
+
 Use these prompts in fresh threads before publishing or after major revisions.
 Pass only the skill path and raw task artifacts. Do not include expected
 answers, hidden diagnoses, or prior conclusions.
@@ -9,17 +14,19 @@ answers, hidden diagnoses, or prior conclusions.
 1. Start a fresh thread or subagent.
 2. Ask it to use this skill by name and path.
 3. Provide one realistic task and the minimum required artifacts.
-4. Review whether it follows the phase gates, loads the right references, avoids
-   blind continuation, and produces evidence-backed decisions.
+4. Review whether it loads project state/policies, runs the read-only gatekeeper,
+   preserves predecessor authorization, avoids blind continuation, and produces
+   proposals or analysis without writing human-controlled state.
 5. Delete or isolate generated test artifacts before the next independent pass.
 
 ## Prompt 1: Continue From Handoff
 
 ```text
 Use $afe-analog-design-flow at <skill-path> to continue this AFE project from
-the provided handoff. First identify the current phase, accepted evidence,
-rejected branches, open risks, and the smallest next experiment. Do not change
-circuits yet unless the handoff clearly identifies a ready implementation task.
+the provided handoff and instantiated project state. Derive the current gate
+and usable evidence from state/policies/gatekeeper, then identify rejected
+branches, open risks, and the smallest next experiment. Do not treat the
+handoff as authorization.
 
 Artifacts:
 - <current handoff markdown>
@@ -33,10 +40,9 @@ branch; it should classify the phase and choose references such as
 ## Prompt 2: Audit A Passing Candidate
 
 ```text
-Use $afe-analog-design-flow at <skill-path> to audit whether this passing
-schematic candidate can be called tapeout-oriented. Summarize what evidence is
-already sufficient, what is only schematic-level, and what must be checked
-before promotion.
+Use $afe-analog-design-flow at <skill-path> to audit a schematic candidate whose
+reported metrics appear to pass. Summarize which evidence is valid and current,
+what is only schematic-level, and what remains before any promotion request.
 
 Artifacts:
 - <candidate report directory>
@@ -89,8 +95,8 @@ of assuming wrapper order is correct.
 ```text
 Use $afe-analog-design-flow at <skill-path> to package this candidate for a
 human review. Generate a concise handoff outline, list missing evidence, and
-say which plots, area tables, floorplan images, and tapeout-readiness checks
-must be included before publication.
+say which plots, area tables, floorplan images, and project-gate artifacts are
+missing. Keep reusable-skill publication review separate from project review.
 
 Artifacts:
 - <candidate run directory>
@@ -102,4 +108,3 @@ Artifacts:
 Expected behavior to check: the agent should load `plots-and-reporting.md`,
 `area-and-comparison.md`, `layout-floorplan.md`, and `handoff-template.md`, and
 should not mix area bases or claim nominal rejection as final.
-

@@ -19,8 +19,10 @@ Create a table like this before architecture work:
 | Startup / recovery | | | | |
 | MC yield | | | | |
 
-If the user has not specified a value, infer a provisional value from system
-context and mark it provisional.
+If a value is missing, Codex may propose a provisional value from system
+context, but it must remain a `proposal` and cannot become a controlling
+requirement or close G1. A human specification owner must ratify the value in
+the requirements traceability record and current spec hash.
 
 ## Literature Search And Extraction
 
@@ -49,9 +51,9 @@ Compare candidate architectures before choosing a transistor path:
 Include local historical candidates even if they are not active. This prevents
 the agent from re-opening a rejected path without a new reason.
 
-## Promotion Criteria
+## Architecture Candidate Nomination Criteria
 
-Promote an architecture only if:
+Nominate an architecture for G2 review only if:
 
 - It can plausibly meet the spec table.
 - Its limiting loops and poles can be modeled.
@@ -59,6 +61,7 @@ Promote an architecture only if:
 - The required area/power is not obviously impossible.
 - It has a clear first transistor-level experiment.
 
-Keep a candidate as secondary if it is promising but needs a narrow cleanup.
-Reject it if it repeatedly needs trim-like behavior, unrealistic passives, or
-unmodeled ideal blocks to pass.
+Keep a proposal as secondary if it is promising but needs a narrow cleanup.
+Recommend rejection if it repeatedly needs trim-like behavior, unrealistic
+passives, or unmodeled ideal blocks to pass. Record the disposition in a
+decision record; only human authorization closes G2.

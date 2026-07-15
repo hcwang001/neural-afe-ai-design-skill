@@ -1,0 +1,24 @@
+schema_version: "1.0.0"
+change_id: REPLACE_WITH_CHANGE_ID
+project_id: REPLACE_WITH_PROJECT_ID
+change_class: other
+status: proposed
+
+owner:
+  actor_type: human
+  actor_id: REPLACE_WITH_CHANGE_OWNER
+
+affected_gates: [REPLACE_WITH_GATE_ID]
+affected_candidates: []
+reason: REPLACE_WITH_CHANGE_REASON
+
+before_fingerprints: {}
+after_fingerprints: {}
+invalidated_evidence_ids: []
+required_revalidation: [REPLACE_WITH_REVALIDATION_ACTION]
+verification_evidence_ids: []
+created_at: REPLACE_WITH_UTC_TIMESTAMP
+
+# Codex may draft and impact-assess this record. Only a real human closes an
+# implemented ECO after revalidation evidence exists.
+closed_by: null

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/decision-record.schema.json",
+  "title": "AFE Technical Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "project_id",
+    "gate_id",
+    "candidate_id",
+    "object_kind",
+    "authorization_state",
+    "created_by",
+    "created_at",
+    "question",
+    "alternatives",
+    "analysis_evidence_ids",
+    "recommendation",
+    "risks",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "gate_id": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "object_kind": {"enum": ["proposal", "technical_decision"]},
+    "authorization_state": {"enum": ["draft", "recorded", "superseded"]},
+    "created_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id"],
+      "properties": {
+        "actor_type": {"enum": ["human", "codex", "agent", "automation"]},
+        "actor_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "question": {"type": "string", "minLength": 1},
+    "alternatives": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "analysis_evidence_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "recommendation": {"type": "string", "minLength": 1},
+    "risks": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "next_action": {"type": "string", "minLength": 1}
+  }
+}

@@ -1,5 +1,13 @@
 # Design Casebook
 
+> **Governance classification: INFORMATIVE_ONLY.** This file contains historical
+> project-specific observations and reusable reasoning patterns. It is not
+> current project state, requirements, promotion evidence, independent review,
+> or gate authorization. Candidate names, numeric values, and words such as
+> passed/promote/freeze describe historical records only. A new project may use
+> them solely as `exploratory_only` input until independently reproduced under
+> its own project ID, baseline hashes, PDK, and evidence policy.
+
 This casebook captures reusable decisions and failure modes from prior AFE
 threads. It is intentionally not a chronological transcript. Use it when a new
 task resembles an old decision, when a topology is being reopened, or when a
@@ -299,3 +307,99 @@ For long analog projects, the handoff is part of the design database.
 **Reusable lesson**
 
 The floorplan image should communicate layout intent, not merely conserve area.
+
+## Case N: Stage-2 CMFB Compensation Must Be Mapped By Mechanism
+
+**Observed pattern**
+
+- The exact INT089/INT090-derived stage-2 still depended on an ideal
+  `10Mohm/250fF` CMFB branch whose final integrated stability had not been
+  closed.
+- Removing compensation gave about `41.8deg` worst-case phase margin. A pure
+  capacitor made phase margin worse, while a pure resistor broke DC because the
+  capacitor was also isolating two CMFB bias nodes.
+- Equal nominal `R*C` products behaved differently because the series resistor
+  supplied phase lead; the design requirement was not one time constant.
+- Co-designing the CMFB source mirror, fixed load, correction actuator, and RC
+  branch produced a narrow ideal boundary. `5Mohm/550fF` only barely crossed
+  `60deg`, while `6Mohm/450fF` retained useful margin.
+- Three no-RC routes were tested separately: fixed-load recentering,
+  source-current/load co-design, and a weaker actuator mirror. Each could find
+  six-corner DC points, but their worst phase margins stayed structurally low,
+  roughly `26deg..46deg`.
+- Mapping the finalist to a distributed PDK `rppolywo_m` resistor and a
+  `24um x 24um` `mimcap_sin` changed the model materially. The resistor alone
+  contributed about `392fF..433fF` body capacitance, comparable to the explicit
+  MIM value of about `549fF..673fF`.
+
+**Decision**
+
+- Close the no-RC branch for the current single-stage CMFB topology. Reopen it
+  only after an architecture change, not another local sizing sweep.
+- Freeze INT101 with the physical distributed-R plus MIM-C branch after exact
+  module PVT/STB, AC/noise, and common-mode pulse recovery.
+- Keep the physical topology in the clean exported core; do not replace it with
+  an ideal `6Mohm/450fF` shorthand.
+- Treat module promotion and full-chain promotion as separate gates. After
+  Stage-2 closure, full-chain work can remain paused while Stage-1 is reopened.
+
+**Evidence and outcome**
+
+- Physical stage-2 passed CMFB `diffstbprobe` in `6/6` process-temperature
+  corners with `62.85deg` minimum phase margin.
+- A `5nA/side`, `100us` output common-mode disturbance recovered to `+/-1mV` in
+  `7us..10us` across all six corners.
+- The physical RC estimate was about `1660.47um2`, about `19.3%` below the old
+  ideal `10Mohm/250fF` proxy, despite including the parasitic structure that
+  actually stabilizes the loop.
+
+**Reusable lesson**
+
+Optimize compensation in this order: identify each component's role, establish
+the ideal requirement boundary, co-design only mechanism-linked devices, close
+structurally failing alternatives, map to distributed PDK passives, rerun exact
+module gates, and only then freeze a clean netlist. Area and stability claims
+made before physical-passive mapping are provisional.
+
+## Case O: Stage-1 Auxiliary Noise, Gain Recovery, And Artifact Reset
+
+**Observed pattern**
+
+- Separate-noise analysis showed that eight local pseudoR well-bias drivers
+  contributed noise comparable to the input pair and output load. The
+  input-adjacent cell dominated the driver contribution.
+- Replacing four pseudoR1 cells per side with one pseudoR2 cell reduced
+  low-frequency density, power, and fHP spread, but PEX feedback capacitance
+  reduced gain and initially worsened integrated input-referred noise.
+- Reducing an already risky 10 fF feedback capacitor was not acceptable. A
+  moderate Cin increase recovered gain while retaining input-impedance margin.
+- A fixed 3 ms overload-recovery deadline conflicted with the intentional
+  low-Hz high-pass pole. Natural recovery was slow, while reasserting the real
+  reset MOS after the artifact gave robust recovery.
+- The validated generator still hid ideal bias currents inside the block until
+  they were moved to explicit ports and regression tested.
+- A final bounded current/input-area/well-bias-area scan improved noise but did
+  not close the hard target before power and output-common-mode penalties
+  appeared.
+
+**Decision**
+
+- Include local well-bias/servo circuits in contribution analysis and scale
+  the most strongly coupled positions first.
+- Evaluate pseudoR changes with gain, integrated noise, fHP, input impedance,
+  area, and rejection together.
+- Recover a parasitic-driven gain loss on the physically safer capacitor; do
+  not shrink a parasitic-dominated Cf merely to improve the nominal ratio.
+- Separate natural high-pass recovery characterization from reset-assisted
+  artifact recovery. Make reset/blanking a system interface when required.
+- Freeze a clean core only after ideal sources are exposed as ports and the
+  cleaned hierarchy numerically matches the promoted candidate.
+- Close local sizing when several co-dominant contributors remain and the best
+  bounded move still misses the target. Open a topology/noise-efficiency or
+  specification branch instead.
+
+**Reusable lesson**
+
+Auxiliary circuits and interfaces can dominate an AFE decision even when the
+main amplifier schematic is unchanged. Optimize the whole local feedback
+ecosystem, then regression-test the exported core.

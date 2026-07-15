@@ -1,0 +1,64 @@
+schema_version: "1.0.0"
+policy_id: afe-governance-authorization-v1
+
+automation_actor_types:
+  - codex
+  - agent
+  - automation
+
+automation_allowed_gate_states:
+  - in_progress
+  - review_ready
+  - human_approval_required
+  - changes_required
+  - blocked
+  - stale
+
+human_only_gate_states:
+  - approved
+
+signature:
+  trusted_signer_registry_required: true
+  supported_methods: [ed25519]
+
+initial_state_actor_types:
+  - system
+  - migration
+
+review:
+  required_actor_type: human
+  allowed_roles:
+    - independent_reviewer
+    - signoff_reviewer
+  require_independence: true
+  require_verified_signature: true
+
+approval:
+  required_actor_type: human
+  allowed_roles:
+    - gate_approver
+    - design_authority
+    - release_authority
+  require_verified_signature: true
+  require_scope_digest_match: true
+  require_distinct_from_candidate_authors: true
+  require_distinct_from_reviewer: true
+
+waiver:
+  required_actor_type: human
+  allowed_roles:
+    - waiver_approver
+    - design_authority
+  require_verified_signature: true
+  require_owner: true
+  require_scope: true
+  require_expiry: true
+  require_distinct_from_owner: true
+  minimum_human_approvals: 1
+
+change:
+  required_actor_type: human
+  allowed_roles:
+    - change_authority
+    - design_authority
+  require_verified_signature: true

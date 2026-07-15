@@ -1,5 +1,9 @@
 # Device Sweeps And Tables
 
+These tables support G3/G5 technical evidence but do not authorize a gate.
+Project-specific device limits, corners, currents, and geometry rules must come
+from the approved PDK/project overlay.
+
 ## Purpose
 
 Use primitive characterization to avoid blind circuit sweeps. The output should
@@ -51,7 +55,7 @@ For each passive option, tabulate:
 Typical options:
 
 - MIM capacitors.
-- MOSCAP using 1.8V devices when safe.
+- MOSCAP using the PDK-approved voltage-domain device when safe.
 - rppoly or other available resistors.
 - MOS triode/off/regulated pseudo-resistors.
 - Extracted pseudoR cells.
@@ -70,8 +74,9 @@ PseudoR tables should include:
 
 Any leakage-dominated primitive, including pseudoR, MOS-off return,
 subthreshold active-R, ultra-weak bleed, or well-bias leakage compensation,
-requires temperature, FF/SS leakage, well/DNW/PSUB leakage, mismatch, startup,
-long-transient, noise, and PEX-sensitivity evidence before promotion.
+  requires the project-approved temperature/process leakage, well/DNW/PSUB
+  leakage, mismatch, startup, long-transient, noise, and PEX-sensitivity
+  evidence before candidate nomination.
 
 ## Sweep Discipline
 

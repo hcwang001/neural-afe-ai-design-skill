@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/afe-governance/change-record.schema.json",
+  "title": "AFE ECO And Change-Control Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "change_id",
+    "project_id",
+    "change_class",
+    "status",
+    "owner",
+    "affected_gates",
+    "affected_candidates",
+    "reason",
+    "before_fingerprints",
+    "after_fingerprints",
+    "invalidated_evidence_ids",
+    "required_revalidation",
+    "verification_evidence_ids",
+    "created_at",
+    "closed_by"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "change_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "minLength": 1},
+    "change_class": {
+      "enum": [
+        "source", "specification", "netlist", "testbench", "pdk_model",
+        "simulator", "command_profile", "metric_extractor", "policy",
+        "layout", "pex", "extraction_deck", "interface", "other"
+      ]
+    },
+    "status": {
+      "enum": [
+        "proposed", "impact_assessed", "implemented",
+        "revalidation_required", "verified", "closed", "cancelled"
+      ]
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_type", "actor_id"],
+      "properties": {
+        "actor_type": {"const": "human"},
+        "actor_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "affected_gates": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^G(?:[0-9]|10)$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "affected_candidates": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "reason": {"type": "string", "minLength": 1},
+    "before_fingerprints": {"type": "object"},
+    "after_fingerprints": {"type": "object"},
+    "invalidated_evidence_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "required_revalidation": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "verification_evidence_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "created_at": {"type": "string", "format": "date-time"},
+    "closed_by": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["actor_type", "actor_id", "role", "closed_at", "verification"],
+          "properties": {
+            "actor_type": {"const": "human"},
+            "actor_id": {"type": "string", "minLength": 1},
+            "role": {"enum": ["change_authority", "design_authority"]},
+            "closed_at": {"type": "string", "format": "date-time"},
+            "verification": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["method", "key_id", "signature_base64"],
+              "properties": {
+                "method": {"const": "ed25519"},
+                "key_id": {"type": "string", "minLength": 1},
+                "signature_base64": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"enum": ["closed", "cancelled"]}}},
+      "then": {
+        "properties": {
+          "closed_by": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "closed"}}},
+      "then": {"properties": {"verification_evidence_ids": {"minItems": 1}}}
+    }
+  ]
+}

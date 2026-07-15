@@ -1,5 +1,9 @@
 # Pseudo-Resistor And Well-Bias Notes
 
+This is technical guidance, not gate state. The numeric first-pass values below
+are historical examples and must be replaced or explicitly adopted by the
+approved project/PDK overlay before they control evidence evaluation.
+
 ## Core Mental Model
 
 For pseudo-resistor leakage compensation, the well-bias path should usually make

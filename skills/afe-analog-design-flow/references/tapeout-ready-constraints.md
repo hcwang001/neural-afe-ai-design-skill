@@ -1,20 +1,26 @@
-# Tapeout-Ready Analog Design Constraints
+# Layout, Post-Layout, And Tapeout Technical Constraints
 
-Use this reference whenever a candidate is being promoted beyond exploration,
-especially when the user asks whether a design is final, manufacturable,
-layout-feasible, or ready for post-layout/signoff work.
+Use this reference when preparing G7 layout-ready, G8 PEX, G9 post-layout
+signoff, or G10 release artifacts. It contains technical constraints, not gate
+authorization. Codex may identify gaps and prepare draft evidence but may not
+write `approved`, complete an independent review, or authorize release.
+
+Project-specific device rules, voltage domains, corners, capacitance thresholds,
+and layout limits must come from the approved specification/PDK overlay. Numeric
+values retained below are engineering heuristics or historical examples unless
+the project explicitly adopts them as controlling requirements.
 
 ## Core Principle
 
-Do not promote a circuit solely because it passes schematic PVT. A promoted
-candidate must be physically realizable, layout-aware, reliability-clean,
+Do not nominate a G7 candidate solely because schematic PVT is clean. A
+layout-ready candidate must be physically realizable, layout-aware, reliability-clean,
 mismatch-aware, startup-safe, and free of functional ideal aids. When more
 power or sizing no longer helps, stop sweeping and identify the dominant
 physical mechanism.
 
-## Tapeout Candidate Promotion Gate
+## G7 Layout-Ready Technical Criteria
 
-A candidate can only move from exploration to tapeout-candidate if:
+A schematic candidate may be nominated for G7 review only if:
 
 1. DC is clean across required corners without functional ideal elements.
 2. Every MOS device passes operating-region and reliability checks.
@@ -29,9 +35,15 @@ A candidate can only move from exploration to tapeout-candidate if:
     implementations.
 11. Area and power per channel are reported.
 12. Parasitic sensitivity is checked before layout.
-13. A PEX signoff path is defined.
-14. MC and mismatch plans are defined.
-15. Test, trim, and calibration hooks are defined when needed.
+13. A PEX implementation and verification path is defined.
+14. Required schematic MC and mismatch evidence is already current.
+15. Test, trim, calibration, ESD, and interface implementations are defined and
+    traceable to G7 artifacts.
+
+This list cannot satisfy G8, G9, or G10. G8 requires actual layout/extraction
+identity and DRC/LVS/PEX artifacts. G9 requires extracted re-verification and
+post-layout MC. G10 requires the immutable release package and organization-
+defined human release authorization.
 
 ## Device Sizing Rules
 
@@ -44,8 +56,9 @@ PGA/VGA core devices.
 For current mirrors, bias references, replica devices, and CMFB bias branches:
 
 - Prefer longer-than-minimum channel length.
-- Prefer current mirror `L >= 2x-5x Lmin`; for critical mirrors, prefer
-  `L >= 4x Lmin` when headroom and area allow.
+- Historical analog heuristics often start current mirrors above minimum
+  length. Exact ratios such as `2x-5x Lmin` or `>=4x Lmin` are not universal
+  gates and require project/PDK justification.
 - Report VDS matching and saturation margin.
 - Avoid extreme weak inversion unless mismatch and leakage are verified.
 - Choose input/noise device `L` from the noise, gm, ro, Cin, and area tradeoff,
@@ -98,10 +111,10 @@ Every promoted candidate must pass a device reliability audit:
 - No cross-domain thin-oxide overstress occurs.
 - No startup, reset, or switching transient overstress occurs.
 
-Audit `VGS`, `VGD`, `VDS`, `VGB`, `VDB`, `VSB`, body diode bias, and
-thick/thin-oxide domain for 1.2 V core devices, 1.8 V devices, any 2.5 V
-branches, DNW/PWELL well-bias circuits, pseudoR body bias, and MUX/ADC
-interfaces.
+Audit `VGS`, `VGD`, `VDS`, `VGB`, `VDB`, `VSB`, body diode bias, and every
+thick/thin-oxide domain in the approved project overlay. Historical 1.2 V,
+1.8 V, and 2.5 V domains are examples only. Include DNW/PWELL well-bias,
+pseudoR body bias, MUX/ADC, PMU, pad, and top-level interfaces.
 
 Reliability must be checked during power-up ramp, reset asserted, reset
 release, standby/active switching, MUX switching, gain-code switching, and
@@ -109,7 +122,9 @@ stimulation/artifact recovery when applicable.
 
 ## Capacitor And Resistor Layout Rules
 
-Any precision capacitor below 50 fF is a layout-risk primitive. It must report
+Any precision capacitor near the project's routing/parasitic floor is a
+layout-risk primitive. A historical screening threshold is 50 fF, but the
+approved PDK/layout overlay controls. The device must report
 unit-cap implementation, routing parasitic estimate, top/bottom plate
 parasitic, mismatch sensitivity, PEX gain error, and CMRR impact.
 
@@ -125,7 +140,8 @@ For gain-setting MIM capacitors:
 `Cin/Cf` ratio should use a matched unit-cap array whenever practical. Do not
 treat an isolated 10 fF schematic capacitor as final layout evidence.
 
-Explicit compensation capacitance must be area-budgeted:
+Explicit compensation capacitance must be area-budgeted. The following bands
+are historical screening examples, not universal gate thresholds:
 
 - `<500 fF`: usually acceptable, still check parasitics when precision matters.
 - `0.5-2 pF`: acceptable with area note.
@@ -133,9 +149,9 @@ Explicit compensation capacitance must be area-budgeted:
 - `10-20 pF`: high-risk.
 - `>20 pF`: topology review required.
 
-Any explicit per-channel compensation capacitor above 1 pF must report area.
-Any per-channel capacitor above 5 pF is a layout red flag unless the system
-area budget explicitly accepts it.
+The project overlay must define report and red-flag thresholds for per-channel
+capacitance. Historical examples used 1 pF for mandatory area reporting and
+5 pF as a layout-risk trigger.
 
 ## Symmetry, Matching, CMRR, And PSRR
 
@@ -162,8 +178,7 @@ output common-mode ripple.
 
 ## PEX And Parasitic Stress Rules
 
-A transistor-level candidate cannot be marked tapeout-ready without a defined
-PEX path:
+A transistor-level candidate cannot satisfy G8/G9 without the defined PEX path:
 
 1. Schematic clean gate.
 2. Pre-layout PVT.
@@ -175,7 +190,7 @@ PEX path:
 8. Post-layout CMRR/PSRR with mismatch.
 
 Before layout, every high-Z node must receive a parasitic sensitivity check.
-Useful pre-layout stresses include:
+Pre-layout stress values must be project-approved. Historical examples include:
 
 - Input parasitic mismatch: 0.5 fF, 1 fF, 2 fF, 5 fF.
 - Output load capacitance: 25 fF, 50 fF, 100 fF, 200 fF.
@@ -268,8 +283,11 @@ offset range, and input common-mode range.
 Input capacitance budget must include ESD, pad, routing, MUX, and package
 parasitics, not only MOS `Cgg`.
 
-Before tapeout, account for DRC, LVS, antenna, metal density, slotting, well
+At G7-G10 as assigned by policy, account for DRC, LVS, antenna, metal density, slotting, well
 density, dummy fill impact, EM/IR for shared bias/reference lines, latch-up
 spacing, guard rings, and substrate isolation. Post-fill extraction must be
 considered for high-Z and small-cap nodes.
 
+None of these technical checks grants G10 release. The release package remains
+human-controlled and must reference an effective G9 approval and current
+digests for all released views.

@@ -1,0 +1,140 @@
+schema_version: "1.0.0"
+project_id: REPLACE_WITH_PROJECT_ID
+state_revision: 0
+template_only: true
+
+current_baseline:
+  source_commit: REPLACE_WITH_SOURCE_COMMIT
+  spec_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  netlist_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  testbench_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  command_profile_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  metric_extractor_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  policy_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+  pdk:
+    id: REPLACE_WITH_PDK_ID
+    release: REPLACE_WITH_PDK_RELEASE
+    model_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+    model_sections: [REPLACE_WITH_MODEL_SECTION]
+  simulator:
+    name: REPLACE_WITH_SIMULATOR
+    version: REPLACE_WITH_SIMULATOR_VERSION
+    executable_hash: sha256:REPLACE_WITH_64_HEX_DIGEST
+
+policies:
+  gate_policy: ../policies/default-gates.yaml
+  evidence_policy: ../policies/default-evidence.yaml
+  authorization_policy: ../policies/default-authorization.yaml
+
+requirements_traceability: requirements-traceability.yaml
+risk_register: risk-register.yaml
+trusted_signers: trusted-signers.yaml
+decision_records: []
+change_records: []
+
+# Initial not_started records are created by the template/system. Codex must not
+# rewrite a gate to not_started or approved; its permitted states are defined by
+# default-authorization.yaml.
+gates:
+  G0:
+    status: not_started
+    status_actor:
+      actor_type: system
+      actor_id: governance-template
+      updated_at: "1970-01-01T00:00:00Z"
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G1:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G2:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G3:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G4:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G5:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G6:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G7:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G8:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G9:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null
+  G10:
+    status: not_started
+    status_actor: {actor_type: system, actor_id: governance-template, updated_at: "1970-01-01T00:00:00Z"}
+    candidate_id: null
+    candidate_authors: []
+    evidence_manifests: []
+    waiver_records: []
+    review_record: null
+    approval_record: null

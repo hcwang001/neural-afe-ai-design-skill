@@ -1,5 +1,22 @@
 # AFE Decision Rules
 
+## Governance Boundary
+
+This file governs technical recommendations: continue, stop, change topology,
+or nominate an immutable candidate for review. It does not authorize a gate.
+Words such as promote, freeze, final, close, or pass in historical material are
+technical branch dispositions only. Lifecycle state is controlled by the
+machine policy, current evidence, independent review, gatekeeper evaluation,
+and a separate human approval record.
+
+Codex may write a proposal, analysis result, candidate nomination, or draft
+decision record. It must not write `approved`, complete an independent review,
+approve a waiver, or substitute a branch decision for G0-G10 closure.
+
+All numeric values in this reference are explicitly historical examples, not
+default criteria. Only the instantiated requirements traceability and approved
+PDK/project overlay may supply controlling thresholds.
+
 Use this reference whenever a design branch is being planned, evaluated,
 promoted, paused, or rejected. The goal is to prevent blind simulation and to
 turn each branch into evidence.
@@ -7,15 +24,17 @@ turn each branch into evidence.
 ## Core Rule
 
 Do not optimize a metric until the dominant mechanism is identified. Do not
-promote a candidate unless it passes the appropriate gate without functional
-ideal aids. Do not keep sweeping device sizes when the failure pattern indicates
+nominate a transistor candidate unless the applicable simulation checks are
+satisfied without functional ideal aids. Do not keep sweeping device sizes when
+the failure pattern indicates
 a topology, leakage, matching, or reference-path limitation.
 
-For tapeout-oriented work, do not promote a candidate solely because schematic
-PVT passes. A promoted candidate must be physically realizable,
+For layout-oriented work, do not nominate a G7 candidate solely because
+schematic PVT is clean. The candidate must be physically realizable,
 reliability-clean, mismatch-aware, startup-safe, layout-aware, and backed by a
 PEX/test/trim plan when those risks apply. Read
-`tapeout-ready-constraints.md` before calling a candidate final.
+`tapeout-ready-constraints.md` before G7 review. G8 PEX, G9 post-layout, and G10
+release remain separate human-controlled gates.
 
 ## Hard Metrics Versus Preference Metrics
 
@@ -46,8 +65,8 @@ range, gain code, load, PVT, and transient recovery.
 
 ## DC-First Rule
 
-Run transistor gates in this order unless doing an explicitly labeled
-diagnostic shortcut:
+Run transistor simulation checks in this order unless doing an explicitly
+labeled `exploratory_only` diagnostic shortcut:
 
 1. DC operating point.
 2. AC, gain, and bandwidth.
@@ -59,8 +78,8 @@ diagnostic shortcut:
 7. PVT plus Monte-Carlo.
 8. Post-layout extraction.
 
-No AC, noise, or STB claim is valid unless the same candidate has already
-passed a clean DC gate without functional ideal elements.
+No AC, noise, or STB claim is valid unless the same immutable candidate has
+current clean-DC evidence without functional ideal elements.
 
 ## Functional Ideal Element Audit
 
@@ -78,10 +97,10 @@ Every candidate report should list:
 Interpretation rules:
 
 - An ideal current reference feeding a diode-connected MOS mirror is acceptable
-  for early exploration, but not final signoff.
+    for early exploration, but not promotion evidence at G5 or later.
 - Functional 250 Mohm, 1 Tohm, or similar huge ideal resistors are red flags.
 - Behavioral CMFB or VCVS blocks are architecture exploration only, not a
-  transistor-level candidate.
+  G5-or-later transistor evidence.
 - A 0 V probe or tie is allowed for measurement only; it is not allowed in a
   functional path being claimed as real.
 
@@ -120,8 +139,8 @@ Prefer:
 - Fixed main load plus small common-mode correction branch.
 - Replica-centered dual actuator when it reduces sensitivity.
 - Small correction gm.
-- PM >= 60 degrees across required corners, with modest compensation cap when
-  possible.
+- Meet the project-defined phase-margin requirement across required conditions,
+  with physically realizable compensation.
 
 Avoid:
 
@@ -129,6 +148,43 @@ Avoid:
 - Per-side fast servos that respond to differential signal.
 - Huge compensation cap as the primary solution.
 - Wideband followers where a slow servo is required.
+
+## Compensation And Physical-Passive Promotion Rule
+
+Classify every compensation component by mechanism before changing its value:
+
+- DC blocking or bias isolation.
+- Pole placement.
+- Phase-lead zero placement.
+- Damping or output-impedance shaping.
+- Leakage or startup path.
+
+Equal `R*C` products are not equivalent when the resistor creates a lead zero
+or the capacitor blocks DC coupling. Diagnose a compensation branch with a
+small, interpretable set such as no branch, capacitor only, resistor only, and
+compact RC. Run DC before stability and stop combinations that violate biasing.
+
+Co-design compensation with the few transistor ratios that directly set plant
+gain, actuator gm, or output/control-node impedance. Do not nominate a candidate
+that merely touches the phase-margin threshold; retain enough schematic margin
+for passive spread and extraction.
+
+Before G5 block-candidate nomination:
+
+1. Replace ideal R/C with the intended PDK devices and verified model sections.
+2. Model a multi-megaohm resistor as a distributed structure when its body or
+   routing capacitance is comparable to the explicit compensation capacitor.
+3. Record PVT ranges for resistance, capacitance, parasitics, noise, voltage
+   coefficient, and area.
+4. Rerun exact integrated DC, differential/CMFB STB, AC/noise, and disturbance
+   recovery with that physical branch.
+5. Create a content-addressed module candidate only after these checks are
+   satisfied. This does not close G5.
+
+If several independent no-RC sizing strategies all pass DC but fail with the
+same structural phase-margin pattern, close that topology branch. Reopen it
+only with a changed loop architecture or new mechanism-level evidence, not a
+wider sizing sweep.
 
 ## Keep Bandwidths Separate
 
@@ -155,7 +211,8 @@ A-B channel resistance; investigate endpoint, well, DNW, or PSUB leakage.
 DNW/PWELL well-bias is usually a slow leakage-compensation servo, not a
 wideband follower.
 
-Typical first targets:
+Historical first-pass examples follow. The approved project/PDK overlay must
+replace them before they control a design:
 
 - PWELL to DNW tracking bandwidth: 1-10 Hz nominal.
 - Acceptable first-pass range: 1-100 Hz.
@@ -193,12 +250,30 @@ Useful diagnostics include noiseless pseudoR controls, noiseless output-load
 controls, ideal-resistor replacement, stage-only versus full-chain comparison,
 and corner-specific separate-noise decomposition.
 
+For a series or distributed feedback network, preserve contributor position.
+If the input-adjacent cell couples more strongly than upstream cells, test
+position-aware sizing before scaling every local driver equally. Include local
+well-bias amplifiers and servos as explicit contributor categories.
+
+When a pseudoR/feedback topology change lowers signal gain through PEX
+capacitance, compare these recovery options together:
+
+- Increase Cin if input impedance and area remain inside limits.
+- Increase a physically safe Cf ratio element only if the desired gain allows
+  it.
+- Change the feedback topology or cell count.
+- Reject the route if gain recovery erases its area/noise advantage.
+
+Do not reduce an already parasitic-dominated feedback capacitor solely to
+restore nominal gain.
+
 ## CMRR And PSRR Must Be Mismatch-Aware
 
 Nominal symmetric CMRR/PSRR is an upper bound only. Design decisions must use
 deterministic mismatch first and later PDK Monte-Carlo.
 
-Useful deterministic stresses:
+Historical deterministic stress examples follow. The approved project/PDK
+overlay controls actual values:
 
 - Capacitor mismatch: 0.03%, 0.05%, 0.1%, 0.3%, 1%.
 - MOS mismatch: 1%, 2%, 5%.
@@ -216,6 +291,37 @@ Decompose PSRR paths when supply sensitivity matters:
 Good differential PSRR does not guarantee quiet output common-mode. Report
 VDD-to-output-CM separately.
 
+## Recovery Deadlines Must Match The High-Pass Pole
+
+Do not apply an arbitrary millisecond recovery gate to a signal path whose
+intentional pseudoR/high-pass time constant is tens or hundreds of
+milliseconds.
+
+Separate two claims:
+
+- Natural recovery: characterize the tail against fHP over a physically long
+  enough window.
+- Assisted recovery: if the product uses blanking, reset, or artifact
+  detection, exercise the real reset MOS/control sequence and gate that path.
+
+A slow natural tail is not automatically loop instability. Conversely, a
+reset-assisted pass creates a top-level requirement for reset timing,
+distribution, and blanking control; record it in the interface contract.
+
+## Freeze Bias Interfaces, Not Hidden Ideal Sources
+
+Before exporting a promoted block:
+
+1. Move ideal current/voltage sources out of the claimed silicon core.
+2. Expose the exact bias nodes or current-injection ports used by the validated
+   circuit.
+3. Keep a separate reproduction harness with the old ideal references.
+4. Rerun numerical regression across the required corners.
+5. Record which master reference/mirror tree remains to be designed.
+
+Do not redesign the bias mirror silently during netlist cleanup. Interface
+cleanup should first preserve the validated electrical operating point.
+
 ## Gain Decisions Are Not Noise Decisions
 
 Increasing total gain reduces ADC quantization impact, but it does not improve
@@ -230,9 +336,9 @@ Choose gain by checking:
 5. Stage output swing.
 6. Gain-code coverage.
 
-A reasonable default target is around 40 dB total gain with roughly 30-50 dB
-programmable range. Do not increase stage-1 gain blindly if it worsens Cin,
-CMRR, pseudoR behavior, or area.
+A legacy neural-AFE starting point was around 40 dB total gain with roughly
+30-50 dB programmable range. It is not a universal requirement. Do not increase
+stage-1 gain blindly if it worsens Cin, CMRR, pseudoR behavior, or area.
 
 ## Power Decisions Must Separate Always-On And Duty-Cycled Blocks
 
@@ -263,12 +369,12 @@ Carry these layout assumptions before finalizing a schematic:
 If Cf is below about 50 fF, explicitly check whether routing and fringe
 parasitics dominate ratio error.
 
-## Branch Closure Template
+## Branch Decision-Record Template
 
 At the end of each design branch, answer:
 
-1. Which gates did this candidate pass: DC, AC, noise, STB, transient, CMRR,
-   PSRR, MC, PEX?
+1. Which simulation checks are satisfied for the exact candidate revision: DC,
+   AC, noise, STB, transient, CMRR, PSRR, MC, PEX?
 2. Does it contain any functional ideal element: ideal resistor, ideal leak,
    behavioral source, 0 V tie, or fixed gate bias?
 3. What is the worst corner, and why?
@@ -279,10 +385,14 @@ At the end of each design branch, answer:
    stop sweeping and open a topology/root-cause branch.
 6. Which metric improved and which got worse: power, Cin, noise, CMRR, PSRR,
    PM, area, recovery?
-7. What is the candidate's status: final candidate, baseline, diagnostic
-   reference, rejected, or historical passing reference?
+7. What is the technical object kind: proposal, analysis result, candidate
+   nomination, diagnostic reference, rejected alternative, or historical
+   informative reference?
 8. What is the next smallest experiment that can distinguish at least two
    root causes?
-9. If it is being promoted toward tapeout, what remains open for device
+9. If it is being nominated for a later gate, what remains open for device
    reliability, small-cap layout, high-Z nodes, PEX, startup/recovery,
    testability, trim/calibration, ESD/top-level interface, and DFM?
+
+Record the answer with `governance/templates/decision-record.yaml`. The record
+does not change gate state or create human authorization.

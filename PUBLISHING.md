@@ -47,7 +47,10 @@ After GitHub renders the repo:
 - Confirm README images display.
 - Confirm `skills/afe-analog-design-flow/SKILL.md` is visible.
 - Confirm no PDK/model/PEX/raw simulation files were uploaded.
-- Run the skill validation locally after any edits.
+- Confirm no template contains approved state, completed review, active waiver
+  authorization, or simulated human signature.
+- Run `python -m unittest discover -s skills/afe-analog-design-flow/tests -v`.
+- Treat publication review separately from project gate review.
 
 ## Contact
 
